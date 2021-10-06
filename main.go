@@ -3,57 +3,49 @@ package main
 import (
 	//"github.com/tclohm/project-pizza/models"
 	"net/http"
-	"bytes"
-	"io"
+	"fmt"
 	"io/ioutil"
-	"mime/multipart"
-	"os"
 )
 
-func postFile(filename string, targetUrl string) error {
-	bodyBuffer := &bytes.Buffer{}
-	bodyWriter = multipart.NewWriter(bodyBuffer)
+func uploadFile(w http.ResponseWriter, r *http.Request) {
+	// Parse multipart form, 10 << 20 specifies a maximum
+	// upload of 10MB files
+	// retrive file from posted form-data
+	r.ParseMultipartForm(10 << 20)
 
-	fileWriter, err := bodyWriter.CreateFormFile("uploadfile", filename)
+	file, handler, err := r.FormFile("myFile")
 	if err != nil {
-		fmt.Println("error writing to buffer")
-		return err
+		fmt.Println("Error Retrieving the File")
+		fmt.Println(err)
+		return
 	}
+	defer file.Close()
+	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+	fmt.Printf("File Size: %+v\n", handler.Size)
+	fmt.Printf("MIME Header: %+v\n", handler.Header)
 
-	// MARK: -- open file handler
-	fileHandler, err := os.Open(filename)
+	// write temp file within our pizza-image directory that follows
+	tempFile, err := ioutil.TempFile("pizza-images", "upload-*.png")
 	if err != nil {
-		fmt.Println("error opening file")
-		return err
+		fmt.Println(err)
 	}
+	defer tempFile.Close()
 
-	defer fileHandler.Close()
-
-	// MARK: -- iocopy
-	_, err := io.Copy(fileWriter, fh)
+	// read all of the contents of our uploaded file into a byte array
+	fileBytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		return err
+		fmt.Println(err)
 	}
 
-	contentType := bodyWriter.FormDataContentType()
-	bodyWriter.Close()
+	tempFile.Write(fileBytes)
+	fmt.Fprintf(w, "Successfully Uploaded File\n")
+}
 
-	resp, err := http.Post(targetUrl, contentType, bodyBuffer)
-	if err != nil {
-		return err
-	}
-
-	defer err != nil {
-		return err
-	}
-
-	fmt.Println(resp.Status)
-	fmt.Println(string(resp_body))
-	return nil
+func setRoutes() {
+	http.HandleFunc("/upload", uploadFile)
+	http.ListenAndServe(":8080", nil)
 }
 
 func main() {
-	targer_url := "http://localhost:9090/upload"
-	filename := "/example.pdg"
-	postFile(filename, target_url)
+	setRoutes()
 }
