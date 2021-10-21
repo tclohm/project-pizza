@@ -6,8 +6,7 @@ import (
 
 type Pizza struct {
 	Name string
-	Shape string
 	Description string
-	images []string
-	venues []Venue
+	Venue Venue
+	Taste Taste
 }
