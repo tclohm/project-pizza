@@ -1,15 +1,10 @@
 package models
 
-import (
-	"fmt"
-	"github.com/google/uuid"
-)
-
 type Venue struct {
-	id ID
-	Name string
-	Lat float64
-	Lon float64
-	Address string
-	Pizzas []Pizza
+	Base
+	Name string `json:"name"`
+	Lat float64 `json:"lat"`
+	Lon float64 `json:"lon`
+	Address string `json:"address"`
+	Pizzas []Pizza `json:"pizzas"`
 }
