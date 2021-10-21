@@ -7,7 +7,13 @@ import (
 	"encoding/json"
 	"log"
 	"io/ioutil"
+	"database/sql"
+	"os"
+
+	"github.com/joho/godotenv"
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
+
 )
 
 func Up(w http.ResponseWriter, r *http.Request) {
@@ -82,6 +88,25 @@ func handleRequests() {
 }
 
 func main() {
+	err := godotenv.Load()
+	pg_connection_string := fmt.Sprintf("port=%s host=%s user=%s "+ 
+		"password=%s dbname=%s sslmode=disable",
+		os.Getenv("PSQL_PORT"), os.Getenv("HOSTNAME"), os.Getenv("PSQL_USER"), "", os.Getenv("PSQL_DATABASE"))
+
+
+	db, err := sql.Open("postgres", pg_connection_string)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("DB connected")
+
 	fmt.Println("server running...")
 	handleRequests()
 }
