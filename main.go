@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"fmt"
 	"encoding/json"
-	"log"
+	stdlog "log"
 	"io/ioutil"
 	"database/sql"
 	"os"
@@ -15,6 +15,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	log "github.com/go-kit/kit/log"
 
 )
 
@@ -173,8 +174,8 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 func handleRequests() {
 	router := mux.NewRouter()
-	router.HandleFunc("/api", Up)
-	router.HandleFunc("/upload", uploadHandler)
+	router.HandleFunc("/api", Up).Methods("GET")
+	router.HandleFunc("/upload", uploadHandler).Methods("POST")
 	
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
