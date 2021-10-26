@@ -11,50 +11,12 @@ import (
 	"os"
 	"runtime/debug"
 	"time"
-
-	"github.com/joho/godotenv"
+	
 	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
 	log "github.com/go-kit/kit/log"
 
 )
 
-// MARK: -- middleware! 
-// if we needed to pass values between handlers, such as
-// the ID of the authenticated user, or a request or a trace
-// ID, we can use context.Context attached to the *http.Request
-// via the *Request.Context()
-// func Middleware(next http.Handler) http.Handler {
-// 	// wrap anon func, and cast it to a http.HandlerFunc
-// 	// signature matches ServeHTTP(w,r)
-// 	return http.HandlerFunc(
-// 		func(w http.ResponseWriter, r *http.Request) {
-// 			// logic before - reading request values,
-
-// 			// call the 'next' handler in the chain
-// 			next.ServeHTTP(w, r)
-// 		}
-// 	)
-// }
-
-// configuredRouter := LoggingMiddleware(OtherMiddleware(YetAnotherMiddleware(router)))
-// log.Fatal(http.ListenAndServe(":8000", configuredRouter))
-
-// func NewExampleMiddleware(something string) func(http.Handler) http.Handler {
-// 	return func(next http.Handler) http.Handler {
-// 		fn := func(w http.ResponseWriter, r *http.Request) {
-// 			// Logic here
-
-// 			// Call the next handler
-// 			next.ServeHTTP(w, r))
-// 		}
-
-// 		return http.HandlerFunc(fn)
-// 	}
-// }
-
-// Minimal wrapper for http.ResponseWriter that allows the 
-// written HTTP status code to be captured for logging
 type responseWriter struct {
 	http.ResponseWriter
 	status int
@@ -112,6 +74,7 @@ func LoggingMiddleware(logger log.Logger) func(http.Handler) http.Handler {
 
 func Up(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
 	fmt.Println("api endpoint hit: return 'Up'")
 	json.NewEncoder(w).Encode(`{"Success": "true", "msg": "Up"}`)
 }
@@ -172,33 +135,21 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(`"Success": "true"`)
 }
 
+func getImage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+}
+
 func handleRequests() {
 	router := mux.NewRouter()
 	router.HandleFunc("/api", Up).Methods("GET")
 	router.HandleFunc("/upload", uploadHandler).Methods("POST")
+	router.HandleFunc("/image/{id}", getImage).Methods("GET")
 	
-	log.Fatal(http.ListenAndServe(":8080", router))
+	stdlog.Fatal(http.ListenAndServe(":8080", router))
 }
 
 func main() {
-	err := godotenv.Load()
-	pg_connection_string := fmt.Sprintf("port=%s host=%s user=%s "+ 
-		"password=%s dbname=%s sslmode=disable",
-		os.Getenv("PSQL_PORT"), os.Getenv("HOSTNAME"), os.Getenv("PSQL_USER"), "", os.Getenv("PSQL_DATABASE"))
-
-
-	db, err := sql.Open("postgres", pg_connection_string)
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("DB connected")
 
 	fmt.Println("server running...")
 	handleRequests()

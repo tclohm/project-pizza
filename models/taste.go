@@ -6,5 +6,5 @@ type Taste struct {
 	Flavor int `json:"flavor"`
 	Sauciness int `json:"sauciness"`
 	Saltiness int `json:"saltiness"`
-	Char int `json:"char"`
+	Charnes int `json:"charness"`
 }
