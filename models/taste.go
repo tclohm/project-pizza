@@ -1,7 +1,6 @@
 package models
 
 type Taste struct {
-	Base
 	Cheesiness int `json:"cheesiness"`
 	Flavor int `json:"flavor"`
 	Sauciness int `json:"sauciness"`
