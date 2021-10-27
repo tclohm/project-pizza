@@ -1,82 +1,42 @@
 package main
 
 import (
-	//"github.com/tclohm/project-pizza/models"
+
 	"net/http"
 	"fmt"
 	"encoding/json"
-	stdlog "log"
+	"log"
 	"io/ioutil"
-	"database/sql"
-	"os"
-	"runtime/debug"
 	"time"
-	
+
+	"github.com/tclohm/project-pizza/models"
 	"github.com/gorilla/mux"
-	log "github.com/go-kit/kit/log"
 
 )
 
-type responseWriter struct {
-	http.ResponseWriter
-	status int
-	wroteHeader bool
+type Message struct {
+	Success bool
+	Msg string
+	Body string
 }
-
-func wrapResponseWriter(w http.ResponseWriter) *responseWriter {
-	return &responseWriter{ResponseWriter: w}
-}
-
-func (rw *responseWriter) Status() int {
-	return rw.status
-}
-
-func (rw *responseWriter) WriteHeader(code int) {
-	if rw.wroteHeader {
-		return
-	}
-
-	rw.status = code
-	rw.ResponseWriter.WriteHeader(code)
-	rw.wroteHeader = true
-
-	return
-}
-
-// LoggingMiddleware logs the incoming HTTP request & its duration.
-func LoggingMiddleware(logger log.Logger) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		fn := func(w http.ResponseWriter, r *http.Request) {
-			defer func() {
-				if err := recover(); err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					logger.Log(
-						"err", err,
-						"trace", debug.Stack(),
-					)
-				}
-			}()
-
-			start := time.Now()
-			wrapped := wrapResponseWriter(w)
-			next.ServeHTTP(wrapped, r)
-			logger.Log(
-				"status", wrapped.status,
-				"method", r.Method,
-				"path", r.URL.EscapedPath(),
-				"duration", time.Since(start),
-			)
-		}
-		return http.HandlerFunc(fn)
-	}
-}
-
 
 func Up(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Println("api endpoint hit: return 'Up'")
-	json.NewEncoder(w).Encode(`{"Success": "true", "msg": "Up"}`)
+
+	m := Message{Success: true, Msg: "Up", Body: "-"}
+
+	res, err := json.Marshal(m)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
 }
 
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
@@ -92,19 +52,23 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error Retrieving the File")
 		json.NewEncoder(w).Encode("Error reading buffer")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
 	buff := make([]byte, 512)
 	_, err = file.Read(buff)
 	if err != nil {
-		json.NewEncoder(w).Encode("Error reading buffer")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
 	filetype := http.DetectContentType(buff)
 	if filetype != "image/jpeg" && filetype != "image/png" {
-		json.NewEncoder(w).Encode(`{ "Success": false, "msg": "File format is not allowed. Please upload a JPEG or PNG image"}`)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
@@ -113,31 +77,49 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
 	fmt.Printf("File Size: %+v\n", handler.Size)
 	fmt.Printf("MIME Header: %+v\n", handler.Header)
+	fmt.Println("Filename", handler.Header["Content-Disposition"])
+	fmt.Println("Content-Type", handler.Header["Content-Type"])
 
-	// write temp file within our pizza-image directory that follows
+	// write temp file within our uploads directory that follows
 	tmpFile, err := ioutil.TempFile("uploads", "upload-*.png")
 	if err != nil {
-		json.NewEncoder(w).Encode(`{"Success": "false", "msg": "Error writing file"}`)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
 	}
 	defer tmpFile.Close()
 
 	// read all of the contents of our uploaded file into a byte array
 	fileBytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		json.NewEncoder(w).Encode(`{"Success": "false", "msg": "Error reading contents"}`)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
 	tmpFile.Write(fileBytes)
 
 	fmt.Println("Successfully Uploaded File\n")
+	fmt.Println("Temporary file", tmpFile.Name())
 
-	json.NewEncoder(w).Encode(`"Success": "true"`)
+	m := Message{Success: true, Msg: "Uploaded!", Body: tmpFile.Name()}
+	res, err := json.Marshal(m)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(res)
 }
 
 func getImage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
+	fmt.Println(r)
+	// fs := http.FileServer(http.Dir("/uploads"))
+	// http.Handle("/uploads/", http.StripPrefix("/uploads/", fs))
 }
 
 func handleRequests() {
@@ -145,12 +127,20 @@ func handleRequests() {
 	router.HandleFunc("/api", Up).Methods("GET")
 	router.HandleFunc("/upload", uploadHandler).Methods("POST")
 	router.HandleFunc("/image/{id}", getImage).Methods("GET")
-	
-	stdlog.Fatal(http.ListenAndServe(":8080", router))
+	server := &http.Server{
+		Handler: router,
+		Addr: "127.0.0.1:8000",
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout: 15 * time.Second,
+	}
+	log.Fatal(server.ListenAndServe())
 }
 
 func main() {
-
-	fmt.Println("server running...")
+	_, err := models.InitDB()
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println("server running on 8000...")
 	handleRequests()
 }
