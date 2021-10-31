@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"database/sql"
 
 	_ "github.com/lib/pq"
 	"github.com/joho/godotenv"
@@ -20,21 +19,14 @@ func GenerateISOString() string {
 
 func ConnectDB() (*gorm.DB, error) {
 	err := godotenv.Load()
-	pg_connection_string := fmt.Sprintf("host=%s user=%s password=%s  "+ 
-		"dbname=%s port=%s sslmode=disable",
-		os.Getenv("HOSTNAME"), os.Getenv("PSQL_USER"), "", os.Getenv("PSQL_DATABASE"), os.Getenv("PSQL_PORT"))
-
-	sqlDB, err := sql.Open("postgres", pg_connection_string)
-	
-	if err != nil {
-		return nil, err
-	}
+	// host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable
+	pg_connection_string := fmt.Sprintf("host=%s dbname=%s user=%s  "+ 
+		"password=%s port=%s sslmode=disable",
+		os.Getenv("HOSTNAME"), os.Getenv("PSQL_DATABASE"), os.Getenv("PSQL_USER"), "", os.Getenv("PSQL_PORT"))
 
 	log.Println("connection:", pg_connection_string)
 
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: sqlDB,
-	}), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(pg_connection_string), &gorm.Config{})
 
 	if err != nil {
 		return nil, err
