@@ -16,9 +16,9 @@ func main() {
 		log.Println(err)
 	}
 
-	db.AutoMigrate(&models.Image{})
-	db.AutoMigrate(&models.Taste{})
-	db.AutoMigrate(&models.Pizza{})
+	db.AutoMigrate(&models.Image{}, &models.Taste{}, &models.Pizza{}, &models.Venue{}, &models.VenuePizza{})
+
+	fmt.Println(db.Migrator().CurrentDatabase())
 
 	dbclient := handlers.DBClient{Db: db}
 	

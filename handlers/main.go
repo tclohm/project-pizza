@@ -13,11 +13,6 @@ import (
 	"github.com/tclohm/project-pizza/models"
 )
 
-type Message struct {
-	Success bool
-	Msg string
-	Body string
-}
 
 type DBClient struct {
 	Db *gorm.DB
@@ -28,9 +23,12 @@ func Up(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Println("api endpoint hit: return 'Up'")
 
-	m := Message{Success: true, Msg: "Up", Body: "-"}
+	response := make(map[string]string)
+	response["status"] = "OK"
+	response["message"] = "Up and Running"
 
-	res, err := json.Marshal(m)
+
+	res, err := json.Marshal(response)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -38,15 +36,14 @@ func Up(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
 
 func (driver *DBClient) PostImage(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Content-Type", "application/json")
 	// Parse multipart form, 10 << 20 specifies a maximum
 	// upload of 10MB files
 	// retrive file from posted form-data
@@ -105,20 +102,15 @@ func (driver *DBClient) PostImage(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Temporary file location", tmpFile.Name())
 
 	img := models.Image{Filename: handler.Filename, Content_type: handler.Header["Content-Type"][0], Location: tmpFile.Name()}
-
+	
 	driver.Db.Create(&img)
 
-	m := Message{Success: true, Msg: "Uploaded!", Body: tmpFile.Name()}
-	
-	res, err := json.Marshal(m)
+	res, err := json.Marshal(img)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
 	w.Write(res)
 
 }
@@ -131,14 +123,24 @@ func (driver *DBClient) GetImage(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (driver *DBClient) PostVenue(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+
+	fmt.Println(r)
+
+}
+
 func HandleRequests(driver DBClient) {
-
-
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api", Up).Methods("GET")
-	router.HandleFunc("/upload", driver.PostImage).Methods("POST")
+
+	router.HandleFunc("/upload/image", driver.PostImage).Methods("POST")
 	router.HandleFunc("/image/{id}", driver.GetImage).Methods("GET")
+
+	router.HandleFunc("/post/venue", driver.PostVenue).Methods("POST")
 	server := &http.Server{
 		Handler: router,
 		Addr: "127.0.0.1:8000",
