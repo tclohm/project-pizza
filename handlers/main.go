@@ -13,12 +13,6 @@ import (
 	"github.com/tclohm/project-pizza/models"
 )
 
-
-type Message struct {
-	Status int
-	Body string
-}
-
 type DBClient struct {
 	Db *gorm.DB
 }
@@ -151,7 +145,7 @@ func (driver *DBClient) PostVenue(w http.ResponseWriter, r *http.Request) {
 
 	driver.Db.Create(&venue)
 
-	res, err := json.Marshal(Message{Status: 200, Body: "Created Location"})
+	res, err := json.Marshal(venue)
 
 	if err != nil {
 		w.Write([]byte(err.Error()))
