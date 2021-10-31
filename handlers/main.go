@@ -14,8 +14,20 @@ import (
 )
 
 
+type Message struct {
+	Status int
+	Body string
+}
+
 type DBClient struct {
 	Db *gorm.DB
+}
+
+func logging(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.RequestURI)
+		next.ServeHTTP(w, r)
+	})
 }
 
 func Up(w http.ResponseWriter, r *http.Request) {
@@ -125,10 +137,28 @@ func (driver *DBClient) GetImage(w http.ResponseWriter, r *http.Request) {
 
 func (driver *DBClient) PostVenue(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Content-Type", "application/json")
 
-	fmt.Println(r)
+	var venue models.Venue
+
+	err := json.NewDecoder(r.Body).Decode(&venue)
+
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	driver.Db.Create(&venue)
+
+	res, err := json.Marshal(Message{Status: 200, Body: "Created Location"})
+
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.Write(res)
 
 }
 
@@ -136,6 +166,7 @@ func HandleRequests(driver DBClient) {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/api", Up).Methods("GET")
+	router.Use(logging)
 
 	router.HandleFunc("/upload/image", driver.PostImage).Methods("POST")
 	router.HandleFunc("/image/{id}", driver.GetImage).Methods("GET")
