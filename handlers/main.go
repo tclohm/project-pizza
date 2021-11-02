@@ -13,6 +13,9 @@ import (
 	"github.com/tclohm/project-pizza/models"
 )
 
+
+const directory = "/Users/taylor/Desktop/web/web-projects/pizza-hunter/api/"
+
 type DBClient struct {
 	Db *gorm.DB
 }
@@ -59,23 +62,6 @@ func (driver *DBClient) PostImage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error Retrieving the File")
 		json.NewEncoder(w).Encode("Error reading buffer")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	buff := make([]byte, 512)
-	_, err = file.Read(buff)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	filetype := http.DetectContentType(buff)
-	if filetype != "image/jpeg" && filetype != "image/png" {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
 		return
 	}
 
@@ -86,10 +72,10 @@ func (driver *DBClient) PostImage(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("MIME Header: %+v\n", handler.Header)
 
 	// write temp file within our uploads directory that follows
-	tmpFile, err := ioutil.TempFile("uploads", "upload-*.png")
+	tmpFile, err := ioutil.TempFile("uploads", "upload-*.jpg")
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		fmt.Println(err)
+		json.NewEncoder(w).Encode("Error")
 		return
 	}
 	defer tmpFile.Close()
@@ -97,8 +83,8 @@ func (driver *DBClient) PostImage(w http.ResponseWriter, r *http.Request) {
 	// read all of the contents of our uploaded file into a byte array
 	fileBytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		fmt.Println(err)
+		json.NewEncoder(w).Encode("Error on read")
 		return
 	}
 
@@ -113,19 +99,27 @@ func (driver *DBClient) PostImage(w http.ResponseWriter, r *http.Request) {
 
 	res, err := json.Marshal(img)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		json.NewEncoder(w).Encode("Error marshal image object")
 		return
 	}
+
+	fmt.Println("image location saved to the db")
 
 	w.Write(res)
 
 }
 
 func (driver *DBClient) GetImage(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Println(r)
-	// fs := http.FileServer(http.Dir("/uploads"))
-	// http.Handle("/uploads/", http.StripPrefix("/uploads/", fs))
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	vars := mux.Vars(r)
+
+	var image models.Image
+
+	driver.Db.First(&image, vars["id"])
+	fmt.Println(directory + image.Location)
+
+	http.ServeFile(w, r, directory + image.Location)
 
 }
 
@@ -159,13 +153,12 @@ func (driver *DBClient) PostVenue(w http.ResponseWriter, r *http.Request) {
 func HandleRequests(driver DBClient) {
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api", Up).Methods("GET")
+	router.HandleFunc("/api", Up)
 	router.Use(logging)
 
-	router.HandleFunc("/upload/image", driver.PostImage).Methods("POST")
-	router.HandleFunc("/image/{id}", driver.GetImage).Methods("GET")
-
-	router.HandleFunc("/post/venue", driver.PostVenue).Methods("POST")
+	router.HandleFunc("/upload/image", driver.PostImage)
+	router.HandleFunc("/image/{id}", driver.GetImage)
+	router.HandleFunc("/post/venue", driver.PostVenue)
 	server := &http.Server{
 		Handler: router,
 		Addr: "127.0.0.1:8000",
