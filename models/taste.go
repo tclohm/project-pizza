@@ -2,9 +2,9 @@ package models
 
 type Taste struct {
 	ID uint `json:"id"`
-	Cheesiness int `json:"cheesiness"`
-	Flavor int `json:"flavor"`
-	Sauciness int `json:"sauciness"`
-	Saltiness int `json:"saltiness"`
-	Charness int `json:"charness"`
+	Cheesiness float32 `json:"cheesiness"`
+	Flavor float32 `json:"flavor"`
+	Sauciness float32 `json:"sauciness"`
+	Saltiness float32 `json:"saltiness"`
+	Charness float32 `json:"charness"`
 }
