@@ -150,6 +150,89 @@ func (driver *DBClient) PostVenue(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (driver *DBClient) PostTaste(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Content-Type", "application/json")
+
+	var taste models.Taste
+
+	err := json.NewDecoder(r.Body).Decode(&taste)
+
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	driver.Db.Create(&taste)
+
+	res, err := json.Marshal(taste)
+
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.Write(res)
+
+}
+
+func (driver *DBClient) PostPizza(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Content-Type", "application/json")
+
+	var pizza models.Pizza
+
+	err := json.NewDecoder(r.Body).Decode(&pizza)
+
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	driver.Db.Create(&pizza)
+
+	res, err := json.Marshal(pizza)
+
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.Write(res)
+
+}
+
+func (driver *DBClient) PostVenuePizza(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Content-Type", "application/json")
+
+	var venuePizza models.VenuePizza
+
+	err := json.NewDecoder(r.Body).Decode(&venuePizza)
+
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	driver.Db.Create(&venuePizza)
+
+	res, err := json.Marshal(venuePizza)
+
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.Write(res)
+
+}
+
+
+
 func HandleRequests(driver DBClient) {
 
 	router := mux.NewRouter()
@@ -158,7 +241,12 @@ func HandleRequests(driver DBClient) {
 
 	router.HandleFunc("/upload/image", driver.PostImage)
 	router.HandleFunc("/image/{id}", driver.GetImage)
+
 	router.HandleFunc("/post/venue", driver.PostVenue)
+	router.HandleFunc("/post/taste", driver.PostTaste)
+	router.HandleFunc("/post/pizza", driver.PostPizza)
+	router.HandleFunc("/post/venuepizza", driver.PostVenuePizza)
+
 	server := &http.Server{
 		Handler: router,
 		Addr: "127.0.0.1:8000",
