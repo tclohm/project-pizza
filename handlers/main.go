@@ -109,20 +109,6 @@ func (driver *DBClient) PostImage(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (driver *DBClient) GetImage(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	vars := mux.Vars(r)
-
-	var image models.Image
-
-	driver.Db.First(&image, vars["id"])
-	fmt.Println(directory + image.Location)
-
-	http.ServeFile(w, r, directory + image.Location)
-
-}
-
 func (driver *DBClient) PostVenue(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST")
@@ -147,33 +133,19 @@ func (driver *DBClient) PostVenue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(res)
-
 }
 
-func (driver *DBClient) PostTaste(w http.ResponseWriter, r *http.Request) {
+func (driver *DBClient) GetImage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST")
-	w.Header().Set("Content-Type", "application/json")
 
-	var taste models.Taste
+	vars := mux.Vars(r)
 
-	err := json.NewDecoder(r.Body).Decode(&taste)
+	var image models.Image
 
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		return
-	}
+	driver.Db.First(&image, vars["id"])
+	fmt.Println(directory + image.Location)
 
-	driver.Db.Create(&taste)
-
-	res, err := json.Marshal(taste)
-
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	w.Write(res)
+	http.ServeFile(w, r, directory + image.Location)
 
 }
 
@@ -240,12 +212,12 @@ func HandleRequests(driver DBClient) {
 	router.Use(logging)
 
 	router.HandleFunc("/upload/image", driver.PostImage)
+	router.HandleFunc("/post/venue", driver.PostVenue)
+
 	router.HandleFunc("/image/{id}", driver.GetImage)
 
-	router.HandleFunc("/post/venue", driver.PostVenue)
-	router.HandleFunc("/post/taste", driver.PostTaste)
 	router.HandleFunc("/post/pizza", driver.PostPizza)
-	router.HandleFunc("/post/venuepizza", driver.PostVenuePizza)
+	router.HandleFunc("/post/pizzavenue", driver.PostVenuePizza)
 
 	server := &http.Server{
 		Handler: router,
