@@ -176,6 +176,7 @@ func (driver *DBClient) PostPizza(w http.ResponseWriter, r *http.Request) {
 
 }
 
+
 func (driver *DBClient) PostVenuePizza(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST")
@@ -200,7 +201,6 @@ func (driver *DBClient) PostVenuePizza(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(res)
-
 }
 
 
@@ -217,7 +217,7 @@ func HandleRequests(driver DBClient) {
 	router.HandleFunc("/image/{id}", driver.GetImage)
 
 	router.HandleFunc("/post/pizza", driver.PostPizza)
-	router.HandleFunc("/post/pizzavenue", driver.PostVenuePizza)
+	router.HandleFunc("/post/venuepizza", driver.PostVenuePizza)
 
 	server := &http.Server{
 		Handler: router,
