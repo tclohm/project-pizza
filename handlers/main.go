@@ -209,7 +209,7 @@ func (driver *DBClient) GetMyPizzas(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var venuePizzas []models.VenuePizza
 
-	driver.Db.Table("venue_pizzas").Select("*").Joins("left join pizzas on venue_pizzas.pizza_id = pizzas.id").Joins("left join venues on venue_pizzas.venue_id = venues.id")
+	resultdriver.Db.Table("venue_pizzas").Select("*").Joins("left join pizzas on venue_pizzas.pizza_id = pizzas.id").Joins("left join venues on venue_pizzas.venue_id = venues.id")
 
 	res, err := json.Marshal(venuePizzas)
 
