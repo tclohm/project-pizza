@@ -29,8 +29,8 @@ func ValidatePizza(v *validator.Validator, pizza *Pizza) {
 	v.Check(pizza.Style != "", "style", "must be provided")
 	v.Check(len(pizza.Style) < 500, "style", "must not be more than 500 bytes long")
 
-	v.Check(pizza.Description != "", "name", "must be provided")
-	v.Check(len(pizza.Description) < 500, "name", "must not be more than 500 bytes long")
+	v.Check(pizza.Description != "", "description", "must be provided")
+	v.Check(len(pizza.Description) < 500, "description", "must not be more than 500 bytes long")
 
 	v.Check(pizza.Cheesiness >= 0, "cheesiness", "must be greater than or equal to 0")
 	v.Check(pizza.Cheesiness <= 5, "cheesiness", "must be less than or equal to 5")
