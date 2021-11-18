@@ -10,6 +10,8 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/tclohm/project-pizza/internal/data"
+
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -30,6 +32,7 @@ type config struct {
 type application struct {
 	config config
 	logger *log.Logger
+	models data.Models
 }
 
 func main() {
@@ -75,6 +78,7 @@ func main() {
 	app := &application{
 		config: cfg,
 		logger: logger,
+		models: data.NewModels(db),
 	}
 
 	srv := &http.Server{
@@ -86,6 +90,7 @@ func main() {
 	}
 
 	logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
+
 	err = srv.ListenAndServe()
 	logger.Fatal(err)
 }
