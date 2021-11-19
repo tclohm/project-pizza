@@ -8,8 +8,5 @@ CREATE TABLE IF NOT EXISTS pizzas (
 	sauciness double precision NOT NULL DEFAULT 0,
 	saltiness double precision NOT NULL DEFAULT 0,
 	charness double precision NOT NULL DEFAULT 0,
-	image_filename text NOT NULL,
-	image_content_type text NOT NULL,
-	image_location text NOT NULL,
 	created_at TIMESTAMP(0) with time zone NOT NULL DEFAULT NOW()
 );

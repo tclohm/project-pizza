@@ -6,7 +6,7 @@ import (
 
 	"github.com/tclohm/project-pizza/internal/validator"
 
-	"github.com/lib/pq"
+	_ "github.com/lib/pq"
 )
 
 type Pizza struct {
@@ -19,9 +19,6 @@ type Pizza struct {
 	Sauciness float32 `json:"sauciness"`
 	Saltiness float32 `json:"saltiness"`
 	Charness float32 `json:"charness"`
-	ImageFilename string `json:"filename"`
-	ImageContentType string `json:"content_type"`
-	ImageLocation string `json:"location"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
@@ -74,7 +71,7 @@ func (p PizzaModel) Insert(pizza *Pizza) error {
 	// args slices containing values for the placeholder parameters from the pizza struct
 	args := []interface{}{
 		pizza.Name, pizza.Style, pizza.Description, pizza.Cheesiness, 
-		pizza.Flavor, pizza.Sauciness, pizza.Saltiness, pizza.Charness
+		pizza.Flavor, pizza.Sauciness, pizza.Saltiness, pizza.Charness,
 	}
 	// passing in the slice and scanning the system generated id
 	return p.DB.QueryRow(query, args...).Scan(&pizza.ID)

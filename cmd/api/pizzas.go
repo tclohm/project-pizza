@@ -22,9 +22,6 @@ func (app *application) createPizzaHandler(w http.ResponseWriter, r *http.Reques
 		Sauciness 			float32 `json:"sauciness"`
 		Saltiness 			float32 `json:"saltiness"`
 		Charness 			float32 `json:"charness"`
-		ImageFilename 		string `json:"filename"`
-		ImageContentType 	string `json:"content_type"`
-		ImageLocation 		string `json:"location"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -42,9 +39,6 @@ func (app *application) createPizzaHandler(w http.ResponseWriter, r *http.Reques
 		Sauciness: 			input.Sauciness,
 		Saltiness: 			input.Saltiness,
 		Charness: 			input.Charness,
-		ImageFilename: 		input.ImageFilename,
-		ImageContentType: 	input.ImageContentType,
-		ImageLocation: 		input.ImageLocation,
 	}
 
 	v := validator.New()
@@ -54,7 +48,19 @@ func (app *application) createPizzaHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	fmt.Fprintf(w, "%+v\n", input)
+	err = app.models.Pizzas.Insert(pizza)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/pizzas/%d", pizza.ID))
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"pizza": pizza}, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) showPizzaHandler(w http.ResponseWriter, r *http.Request) {
@@ -77,9 +83,6 @@ func (app *application) showPizzaHandler(w http.ResponseWriter, r *http.Request)
 		Sauciness: 3.5,
 		Saltiness: 3.0,
 		Charness: 3.0,
-		ImageFilename: "throwaway.jpg",
-		ImageContentType: "jpg/png",
-		ImageLocation: "/Users/taylor/Desktop/web/web-projects/pizza-hunter/api/uploads/throwaway.jpg",
 		CreatedAt: time.Now(),
 	}
 
