@@ -3,6 +3,7 @@ package data
 import (
 	"time"
 	"database/sql"
+	"errors"
 
 	"github.com/tclohm/project-pizza/internal/validator"
 
@@ -78,11 +79,73 @@ func (p PizzaModel) Insert(pizza *Pizza) error {
 }
 
 func (p PizzaModel) Get(id int64) (*Pizza, error) {
-	return nil, nil
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	query := `
+		SELECT id, 
+		name,
+		description, 
+		cheesiness, 
+		flavor, 
+		sauciness, 
+		saltiness, 
+		charness
+		FROM pizzas WHERE id = $1
+	`
+
+	var pizza Pizza
+
+	err := p.DB.QueryRow(query, id).Scan(
+		&pizza.ID,
+		&pizza.Name,
+		&pizza.Description,
+		&pizza.Cheesiness,
+		&pizza.Flavor,
+		&pizza.Sauciness,
+		&pizza.Saltiness,
+		&pizza.Charness,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &pizza, nil
 }
 
 func (p PizzaModel) Update(pizza *Pizza) error {
-	return nil
+	query := `
+		UPDATE pizzas
+		SET name = $1,
+		description = $2, 
+		cheesiness = $3, 
+		flavor = $4, 
+		sauciness = $5, 
+		saltiness = $6, 
+		charness = $7
+		WHERE id = $8
+		RETURNING id
+	`
+
+	args := []interface{}{
+		pizza.Name,
+		pizza.Description,
+		pizza.Cheesiness,
+		pizza.Flavor,
+		pizza.Sauciness,
+		pizza.Saltiness,
+		pizza.Charness,
+		pizza.ID,
+	}
+	// query and scan the new value in
+	return p.DB.QueryRow(query, args...).Scan(&pizza)
 }
 
 func (p PizzaModel) Delete(id int64) error {

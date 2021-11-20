@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
+	"errors"
 
 	"github.com/tclohm/project-pizza/internal/data"
 	"github.com/tclohm/project-pizza/internal/validator"
@@ -73,21 +73,88 @@ func (app *application) showPizzaHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	pizza := data.Pizza{
-		ID: n,
-		Name: "Mama's Fresh To Death Za",
-		Style: "California-style",
-		Description: "Fresh Veggies and plenty of cheese",
-		Cheesiness: 3.2,
-		Flavor: 5.0,
-		Sauciness: 3.5,
-		Saltiness: 3.0,
-		Charness: 3.0,
-		CreatedAt: time.Now(),
+	pizza, err := app.models.Pizzas.Get(n)
+
+	if err != nil {
+		switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				app.notFoundResponse(w, r)
+			default:
+				app.serverErrorResponse(w, r, err)
+		}
+		return
 	}
+	
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"pizza": pizza}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *application) updatePizzaHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	n, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	pizza, err := app.models.Pizzas.Get(n)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var input struct {
+		Name 				string `json:"name"`
+		Style 				string `json:"style"`
+		Description 		string `json:"description"`
+		Cheesiness 			float32 `json:"cheesiness"`
+		Flavor 				float32 `json:"flavor"`
+		Sauciness 			float32 `json:"sauciness"`
+		Saltiness 			float32 `json:"saltiness"`
+		Charness 			float32 `json:"charness"`
+	}
+
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+
+	pizza.Name = input.Name 		
+	pizza.Style = input.Style 		
+	pizza.Description = input.Description 
+	pizza.Cheesiness = input.Cheesiness 	
+	pizza.Flavor = input.Flavor 		
+	pizza.Sauciness = input.Sauciness 	
+	pizza.Saltiness = input.Saltiness 	
+	pizza.Charness = input.Charness 
+
+	v := validator.New()
+
+	if data.ValidatePizza(v, pizza); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = app.models.Pizzas.Update(pizza)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"pizza": pizza}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}	
 }
