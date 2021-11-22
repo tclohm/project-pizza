@@ -11,7 +11,8 @@ func (app *application) routes() *mux.Router {
 	sub.HandleFunc("/healthcheck", app.healthcheckHandler).Methods("GET")
 	sub.HandleFunc("/pizzas", app.createPizzaHandler).Methods("POST")
 	sub.HandleFunc("/pizzas/{id:[0-9]+}", app.showPizzaHandler).Methods("GET")
-	sub.HandleFunc("/pizzas/{id:[0-9]+}", app.updatePizzaHandler).Methods("PUT")
+	sub.HandleFunc("/pizzas/{id:[0-9]+}", app.updatePizzaHandler).Methods("PATCH")
+	sub.HandleFunc("/pizzas/{id:[0-9]+}", app.deletePizzaHandler).Methods("DELETE")
 
 	return router
 }

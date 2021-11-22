@@ -114,14 +114,14 @@ func (app *application) updatePizzaHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	var input struct {
-		Name 				string `json:"name"`
-		Style 				string `json:"style"`
-		Description 		string `json:"description"`
-		Cheesiness 			float32 `json:"cheesiness"`
-		Flavor 				float32 `json:"flavor"`
-		Sauciness 			float32 `json:"sauciness"`
-		Saltiness 			float32 `json:"saltiness"`
-		Charness 			float32 `json:"charness"`
+		Name 				*string `json:"name"`
+		Style 				*string `json:"style"`
+		Description 		*string `json:"description"`
+		Cheesiness 			*float32 `json:"cheesiness"`
+		Flavor 				*float32 `json:"flavor"`
+		Sauciness 			*float32 `json:"sauciness"`
+		Saltiness 			*float32 `json:"saltiness"`
+		Charness 			*float32 `json:"charness"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -130,15 +130,38 @@ func (app *application) updatePizzaHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	if input.Name != nil {
+		pizza.Name = *input.Name
+	}
 
-	pizza.Name = input.Name 		
-	pizza.Style = input.Style 		
-	pizza.Description = input.Description 
-	pizza.Cheesiness = input.Cheesiness 	
-	pizza.Flavor = input.Flavor 		
-	pizza.Sauciness = input.Sauciness 	
-	pizza.Saltiness = input.Saltiness 	
-	pizza.Charness = input.Charness
+	if input.Style != nil {
+		pizza.Style = *input.Style
+	}
+
+	if input.Description != nil {
+		pizza.Description = *input.Description
+	}
+
+	if input.Cheesiness != nil {
+		pizza.Cheesiness = *input.Cheesiness
+	} 
+
+	if input.Flavor != nil {
+		pizza.Flavor = *input.Flavor
+	} 	
+
+	if input.Sauciness != nil {
+		pizza.Sauciness = *input.Sauciness
+	}
+
+	if input.Saltiness != nil {
+		pizza.Saltiness = *input.Saltiness
+	}
+
+	if input.Charness != nil {
+		pizza.Charness = *input.Charness
+	} 	
+
 
 	v := validator.New()
 
@@ -149,7 +172,12 @@ func (app *application) updatePizzaHandler(w http.ResponseWriter, r *http.Reques
 
 	err = app.models.Pizzas.Update(pizza)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 
@@ -157,4 +185,31 @@ func (app *application) updatePizzaHandler(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}	
+}
+
+func (app *application) deletePizzaHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	n, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	err = app.models.Pizzas.Delete(n)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "pizza successfully deleted"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
