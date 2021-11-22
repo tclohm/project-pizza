@@ -138,7 +138,7 @@ func (app *application) updatePizzaHandler(w http.ResponseWriter, r *http.Reques
 	pizza.Flavor = input.Flavor 		
 	pizza.Sauciness = input.Sauciness 	
 	pizza.Saltiness = input.Saltiness 	
-	pizza.Charness = input.Charness 
+	pizza.Charness = input.Charness
 
 	v := validator.New()
 

@@ -86,6 +86,7 @@ func (p PizzaModel) Get(id int64) (*Pizza, error) {
 	query := `
 		SELECT id, 
 		name,
+		style,
 		description, 
 		cheesiness, 
 		flavor, 
@@ -100,6 +101,7 @@ func (p PizzaModel) Get(id int64) (*Pizza, error) {
 	err := p.DB.QueryRow(query, id).Scan(
 		&pizza.ID,
 		&pizza.Name,
+		&pizza.Style,
 		&pizza.Description,
 		&pizza.Cheesiness,
 		&pizza.Flavor,
@@ -145,7 +147,7 @@ func (p PizzaModel) Update(pizza *Pizza) error {
 		pizza.ID,
 	}
 	// query and scan the new value in
-	return p.DB.QueryRow(query, args...).Scan(&pizza)
+	return p.DB.QueryRow(query, args...).Scan(&pizza.ID)
 }
 
 func (p PizzaModel) Delete(id int64) error {
