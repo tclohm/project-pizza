@@ -4,6 +4,7 @@ import (
 	"time"
 	"database/sql"
 	"errors"
+	"context"
 
 	"github.com/tclohm/project-pizza/internal/validator"
 
@@ -54,7 +55,7 @@ type PizzaModel struct {
 	DB *sql.DB
 }
 
-func (p PizzaModel) Insert(pizza *Pizza) error {
+func (pm PizzaModel) Insert(pizza *Pizza) error {
 	query := `
 	INSERT INTO pizzas (
 		name, 
@@ -74,11 +75,15 @@ func (p PizzaModel) Insert(pizza *Pizza) error {
 		pizza.Name, pizza.Style, pizza.Description, pizza.Cheesiness, 
 		pizza.Flavor, pizza.Sauciness, pizza.Saltiness, pizza.Charness,
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	defer cancel()
+
 	// passing in the slice and scanning the system generated id
-	return p.DB.QueryRow(query, args...).Scan(&pizza.ID)
+	return pm.DB.QueryRowContext(ctx, query, args...).Scan(&pizza.ID)
 }
 
-func (p PizzaModel) Get(id int64) (*Pizza, error) {
+func (pm PizzaModel) Get(id int64) (*Pizza, error) {
 	if id < 1 {
 		return nil, ErrRecordNotFound
 	}
@@ -97,8 +102,13 @@ func (p PizzaModel) Get(id int64) (*Pizza, error) {
 	`
 
 	var pizza Pizza
+	// 3-second timeout deadline
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	// release resources associated with context before Get() is returned
+	// memory leak avoided
+	defer cancel()
 
-	err := p.DB.QueryRow(query, id).Scan(
+	err := pm.DB.QueryRowContext(ctx, query, id).Scan(
 		&pizza.ID,
 		&pizza.Name,
 		&pizza.Style,
@@ -122,7 +132,7 @@ func (p PizzaModel) Get(id int64) (*Pizza, error) {
 	return &pizza, nil
 }
 
-func (p PizzaModel) Update(pizza *Pizza) error {
+func (pm PizzaModel) Update(pizza *Pizza) error {
 	query := `
 		UPDATE pizzas
 		SET name = $1,
@@ -146,26 +156,61 @@ func (p PizzaModel) Update(pizza *Pizza) error {
 		pizza.Charness,
 		pizza.ID,
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	defer cancel()
 	// query and scan the new value in
-	return p.DB.QueryRow(query, args...).Scan(&pizza.ID)
+	err := pm.DB.QueryRowContext(ctx, query, args...).Scan(&pizza.ID)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
+	return nil
 }
 
-func (p PizzaModel) Delete(id int64) error {
+func (pm PizzaModel) Delete(id int64) error {
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+
+	query := `
+		DELETE FROM pizzas
+		WHERE id = $1`
+
+	result, err := pm.DB.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return ErrRecordNotFound
+	}
+	
 	return nil
 }
 
 
 type MockPizzaModel struct {}
 
-func (p MockPizzaModel) Insert(pizza *Pizza) error {
+func (pm MockPizzaModel) Insert(pizza *Pizza) error {
 	return nil
 }
 
-func (p MockPizzaModel) Get(id int64) (*Pizza, error) {
+func (pm MockPizzaModel) Get(id int64) (*Pizza, error) {
 	return nil, nil
 }
 
-func (p MockPizzaModel) Update(pizza *Pizza) error {
+func (pm MockPizzaModel) Update(pizza *Pizza) error {
 	return nil
 }
 
