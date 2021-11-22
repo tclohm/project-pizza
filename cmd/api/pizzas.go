@@ -213,3 +213,32 @@ func (app *application) deletePizzaHandler(w http.ResponseWriter, r *http.Reques
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) listPizzasHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Name 		string
+		Style 		string
+		Page 		int
+		PageSize	int
+		Sort 		string
+	}
+
+	v := validator.New()
+
+	qs := r.URL.Query()
+
+	input.Name = app.readString(qs, "name", "")
+	input.Style = app.readString(qs, "style", "")
+
+	input.Page = app.readInt(qs, "page", 1, v)
+	input.PageSize = app.readInt(qs, "page_size", 20, v)
+
+	input.Sort = app.readString(qs, "sort", "id")
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	fmt.Fprintf(w, "%+v\n", input)
+}

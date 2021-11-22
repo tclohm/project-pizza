@@ -3,10 +3,15 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"errors"
 	"fmt"
 	"io"
 	"strings"
+	"strconv"
+
+	"github.com/tclohm/project-pizza/internal/validator"
+	
 )
 
 // envelope type
@@ -73,4 +78,40 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data envelo
 	w.Write(js)
 
 	return nil
+}
+
+func (app *application) readString(qs url.Values, key string, defaultValue string) string {
+	s := qs.Get(key)
+
+	if s == "" {
+		return defaultValue
+	}
+
+	return s
+}
+
+func (app *application) readCSV(qs url.Values, key string, defaultValue []string) []string {
+	csv := qs.Get(key)
+
+	if csv == "" {
+		return defaultValue
+	}
+
+	return strings.Split(csv, ",")
+}
+
+func (app *application) readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
+	s := qs.Get(key)
+
+	if s == "" {
+		return defaultValue
+	}
+
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		v.AddError(key, "must be integer value")
+		return defaultValue
+	}
+
+	return i
 }
