@@ -218,9 +218,7 @@ func (app *application) listPizzasHandler(w http.ResponseWriter, r *http.Request
 	var input struct {
 		Name 		string
 		Style 		string
-		Page 		int
-		PageSize	int
-		Sort 		string
+		data.Filters
 	}
 
 	v := validator.New()
@@ -233,9 +231,10 @@ func (app *application) listPizzasHandler(w http.ResponseWriter, r *http.Request
 	input.Page = app.readInt(qs, "page", 1, v)
 	input.PageSize = app.readInt(qs, "page_size", 20, v)
 
-	input.Sort = app.readString(qs, "sort", "id")
+	input.Filters.Sort = app.readString(qs, "sort", "id")
+	input.Filters.SortSafelist = []string{"id", "name", "style", "-id", "-name", "-style"}
 
-	if !v.Valid() {
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
