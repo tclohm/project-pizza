@@ -239,7 +239,7 @@ func (app *application) listPizzasHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	pizzas, err := app.models.Pizzas.GetAll(input.Style, input.Filters)
+	pizzas, err := app.models.Pizzas.GetAll(input.Name, input.Style, input.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

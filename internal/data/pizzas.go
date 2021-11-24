@@ -199,7 +199,7 @@ func (pm PizzaModel) Delete(id int64) error {
 	return nil
 }
 
-func (pm PizzaModel) GetAll(style string, filters Filters) ([]*Pizza, error) {
+func (pm PizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizza, error) {
 	query := `
 		SELECT id,
 		name,
@@ -211,14 +211,15 @@ func (pm PizzaModel) GetAll(style string, filters Filters) ([]*Pizza, error) {
 		saltiness, 
 		charness
 		FROM pizzas
-		WHERE (LOWER(style) = LOWER($1) OR $1 = '')
+		WHERE (to_tsvector('simple', name) @@ plainto_tsquery('simple', $1) OR $1 = '')
+		AND (LOWER(style) = LOWER($2) OR $2 = '')
 		ORDER BY id
 	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
 	defer cancel()
 
-	rows, err := pm.DB.QueryContext(ctx, query, style)
+	rows, err := pm.DB.QueryContext(ctx, query, name, style)
 	if err != nil {
 		return nil, err
 	}
@@ -275,6 +276,6 @@ func (pm MockPizzaModel) Delete(id int64) error {
 	return nil
 }
 
-func (pm MockPizzaModel) GetAll(style string, filters Filters) ([]*Pizza, error) {
+func (pm MockPizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizza, error) {
 	return nil, nil
 }
