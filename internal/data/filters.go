@@ -1,6 +1,7 @@
 package data
 
 import (
+	"strings"
 	"github.com/tclohm/project-pizza/internal/validator"
 )
 
@@ -9,6 +10,25 @@ type Filters struct {
 	PageSize 		int
 	Sort 			string
 	SortSafelist 	[]string
+}
+
+// stop sql injection attack
+func (f Filters) sortColumn() string {
+	for _, safeValue := range f.SortSafelist {
+		if f.Sort == safeValue {
+			return strings.TrimPrefix(f.Sort, "-")
+		}
+	}
+
+	panic("unsafe sort parameter: " + f.Sort)
+}
+
+func (f Filters) sortDirection() string {
+	if strings.HasPrefix(f.Sort, "-") {
+		return "DESC"
+	}
+
+	return "ASC"
 }
 
 func ValidateFilters(v *validator.Validator, f Filters) {

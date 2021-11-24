@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"context"
+	"fmt"
 
 	"github.com/tclohm/project-pizza/internal/validator"
 
@@ -200,7 +201,7 @@ func (pm PizzaModel) Delete(id int64) error {
 }
 
 func (pm PizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizza, error) {
-	query := `
+	query := fmt.Sprintf(`
 		SELECT id,
 		name,
 		style,
@@ -213,8 +214,8 @@ func (pm PizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizz
 		FROM pizzas
 		WHERE (to_tsvector('simple', name) @@ plainto_tsquery('simple', $1) OR $1 = '')
 		AND (LOWER(style) = LOWER($2) OR $2 = '')
-		ORDER BY id
-	`
+		ORDER BY %s %s, id ASC`, 
+		filters.sortColumn(), filters.sortDirection()) 
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
 	defer cancel()
