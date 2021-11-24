@@ -16,6 +16,7 @@ type Models struct {
 		Get(id int64) (*Pizza, error)
 		Update(pizza *Pizza) error
 		Delete(id int64) error
+		GetAll(style string, filters Filters) ([]*Pizza, error)
 	}
 }
 

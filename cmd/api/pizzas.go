@@ -239,5 +239,14 @@ func (app *application) listPizzasHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	fmt.Fprintf(w, "%+v\n", input)
+	pizzas, err := app.models.Pizzas.GetAll(input.Style, input.Filters)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"pizzas": pizzas}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
