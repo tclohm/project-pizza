@@ -199,6 +199,63 @@ func (pm PizzaModel) Delete(id int64) error {
 	return nil
 }
 
+func (pm PizzaModel) GetAll(style string, filters Filters) ([]*Pizza, error) {
+	query := `
+		SELECT id,
+		name,
+		style,
+		description, 
+		cheesiness, 
+		flavor, 
+		sauciness, 
+		saltiness, 
+		charness
+		FROM pizzas
+		WHERE (LOWER(style) = LOWER($1) OR $1 = '')
+		ORDER BY id
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	defer cancel()
+
+	rows, err := pm.DB.QueryContext(ctx, query, style)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	pizzas := []*Pizza{}
+
+	for rows.Next() {
+		var pizza Pizza
+
+		err := rows.Scan(
+			&pizza.ID,
+			&pizza.Name,
+			&pizza.Style,
+			&pizza.Description, 
+			&pizza.Cheesiness, 
+			&pizza.Flavor, 
+			&pizza.Sauciness, 
+			&pizza.Saltiness, 
+			&pizza.Charness,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		pizzas = append(pizzas, &pizza)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return pizzas, nil
+}
+
 
 type MockPizzaModel struct {}
 
@@ -214,6 +271,10 @@ func (pm MockPizzaModel) Update(pizza *Pizza) error {
 	return nil
 }
 
-func (p MockPizzaModel) Delete(id int64) error {
+func (pm MockPizzaModel) Delete(id int64) error {
 	return nil
+}
+
+func (pm MockPizzaModel) GetAll(style string, filters Filters) ([]*Pizza, error) {
+	return nil, nil
 }
