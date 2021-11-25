@@ -239,13 +239,13 @@ func (app *application) listPizzasHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	pizzas, err := app.models.Pizzas.GetAll(input.Name, input.Style, input.Filters)
+	pizzas, metadata, err := app.models.Pizzas.GetAll(input.Name, input.Style, input.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"pizzas": pizzas}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"pizzas": pizzas, "metadata": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

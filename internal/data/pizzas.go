@@ -200,9 +200,11 @@ func (pm PizzaModel) Delete(id int64) error {
 	return nil
 }
 
-func (pm PizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizza, error) {
+func (pm PizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizza, Metadata, error) {
 	query := fmt.Sprintf(`
-		SELECT id,
+		SELECT 
+		count(*) OVER(),
+		id,
 		name,
 		style,
 		description, 
@@ -214,25 +216,30 @@ func (pm PizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizz
 		FROM pizzas
 		WHERE (to_tsvector('simple', name) @@ plainto_tsquery('simple', $1) OR $1 = '')
 		AND (LOWER(style) = LOWER($2) OR $2 = '')
-		ORDER BY %s %s, id ASC`, 
+		ORDER BY %s %s, id ASC
+		LIMIT $3 OFFSET $4`, 
 		filters.sortColumn(), filters.sortDirection()) 
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
 	defer cancel()
 
-	rows, err := pm.DB.QueryContext(ctx, query, name, style)
+	args := []interface{}{name, style, filters.limit(), filters.offset()}
+
+	rows, err := pm.DB.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
 	defer rows.Close()
 
+	totalRecords := 0
 	pizzas := []*Pizza{}
 
 	for rows.Next() {
 		var pizza Pizza
 
 		err := rows.Scan(
+			&totalRecords,
 			&pizza.ID,
 			&pizza.Name,
 			&pizza.Style,
@@ -245,17 +252,19 @@ func (pm PizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizz
 		)
 
 		if err != nil {
-			return nil, err
+			return nil, Metadata{}, err
 		}
 
 		pizzas = append(pizzas, &pizza)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
-	return pizzas, nil
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+
+	return pizzas, metadata, nil
 }
 
 
@@ -277,6 +286,6 @@ func (pm MockPizzaModel) Delete(id int64) error {
 	return nil
 }
 
-func (pm MockPizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizza, error) {
-	return nil, nil
+func (pm MockPizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizza, Metadata, error) {
+	return nil, Metadata{}, nil
 }
