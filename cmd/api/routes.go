@@ -15,5 +15,5 @@ func (app *application) routes() *mux.Router {
 	sub.HandleFunc("/pizzas/{id:[0-9]+}", app.updatePizzaHandler).Methods("PATCH")
 	sub.HandleFunc("/pizzas/{id:[0-9]+}", app.deletePizzaHandler).Methods("DELETE")
 
-	return router
+	return app.recoverPanic(router)
 }
