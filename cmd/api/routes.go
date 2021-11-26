@@ -1,10 +1,11 @@
 package main
 
 import (
+	"net/http"
 	"github.com/gorilla/mux"
 )
 
-func (app *application) routes() *mux.Router {
+func (app *application) routes() http.Handler {
 	// init new 
 	router := mux.NewRouter()
 	sub := router.PathPrefix("/v1").Subrouter()
@@ -15,5 +16,5 @@ func (app *application) routes() *mux.Router {
 	sub.HandleFunc("/pizzas/{id:[0-9]+}", app.updatePizzaHandler).Methods("PATCH")
 	sub.HandleFunc("/pizzas/{id:[0-9]+}", app.deletePizzaHandler).Methods("DELETE")
 
-	return app.recoverPanic(router)
+	return app.recoverPanic(app.rateLimit(router))
 }
