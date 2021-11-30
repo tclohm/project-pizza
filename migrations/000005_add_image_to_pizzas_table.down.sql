@@ -1,1 +1,2 @@
+ALTER TABLE pizzas DROP CONSTRAINT IF EXISTS image_id;
 ALTER TABLE pizzas DROP COLUMN image_id;
