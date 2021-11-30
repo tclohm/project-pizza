@@ -1,0 +1,1 @@
+ALTER TABLE pizzas ADD FOREIGN KEY image_id REFERENCES images(id)

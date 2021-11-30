@@ -1,0 +1,1 @@
+ALTER TABLE pizzas DROP COLUMN image_id;
