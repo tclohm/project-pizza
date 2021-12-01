@@ -23,6 +23,7 @@ type Pizza struct {
 	Saltiness float32 `json:"saltiness"`
 	Charness float32 `json:"charness"`
 	CreatedAt time.Time `json:"created_at"`
+	ImageId int64 `json:"image_id"`
 }
 
 func ValidatePizza(v *validator.Validator, pizza *Pizza) {
@@ -66,7 +67,8 @@ func (pm PizzaModel) Insert(pizza *Pizza) error {
 		flavor, 
 		sauciness, 
 		saltiness, 
-		charness
+		charness,
+		image_id,
 	)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	RETURNING id
@@ -75,6 +77,7 @@ func (pm PizzaModel) Insert(pizza *Pizza) error {
 	args := []interface{}{
 		pizza.Name, pizza.Style, pizza.Description, pizza.Cheesiness, 
 		pizza.Flavor, pizza.Sauciness, pizza.Saltiness, pizza.Charness,
+		pizza.ImageId,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
