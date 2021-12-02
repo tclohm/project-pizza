@@ -61,12 +61,12 @@ func (vm VenueModel) Get(id int64) (*venue, error) {
 	}
 
 	query := `
-		SELECT id, 
+	SELECT id, 
 		name, 
 		lat,
 		lon,
-		address
-		FROM venues WHERE id = $1
+		address,
+	FROM venues WHERE id = $1
 	`
 
 	var venue venue
