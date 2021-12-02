@@ -3,7 +3,7 @@ package data
 import (
 	"time"
 	"database/sql"
-	_ "errors"
+	"errors"
 	"context"
 	_ "fmt"
 
