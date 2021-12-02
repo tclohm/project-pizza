@@ -7,6 +7,7 @@ import (
 	"time"
 	"context"
 	"database/sql"
+	"strings"
 
 	"github.com/tclohm/project-pizza/internal/data"
 	"github.com/tclohm/project-pizza/internal/jsonlog"
@@ -31,6 +32,9 @@ type config struct {
 		rps 	float64
 		burst 	int
 		enabled bool
+	}
+	cors struct {
+		trustedOrigins []string
 	}
 }
 
@@ -72,8 +76,12 @@ func main() {
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
 
-	flag.Parse()
+	flag.Func("cors-trusted-origins", "Trusted CORS origins (space separated)", func(val string) error {
+		cfg.cors.trustedOrigins = strings.Fields(val)
+		return nil
+	})
 
+	flag.Parse()
 
 	db, err := openDB(cfg)
 	if err != nil {

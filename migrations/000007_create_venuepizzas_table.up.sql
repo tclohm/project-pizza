@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS venuepizzas (
+	id bigserial PRIMARY KEY,
+	venueId int,
+	pizzaId int,
+	CONSTRAINT fk_venue
+	 FOREIGN KEY(venueId) REFERENCES venues(id) ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT fk_pizza
+	 FOREIGN KEY(pizzaId) REFERENCES pizzas(id) ON UPDATE CASCADE ON DELETE CASCADE
+);
