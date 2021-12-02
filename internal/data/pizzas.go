@@ -101,7 +101,8 @@ func (pm PizzaModel) Get(id int64) (*Pizza, error) {
 		flavor, 
 		sauciness, 
 		saltiness, 
-		charness
+		charness,
+		image_id
 		FROM pizzas WHERE id = $1
 	`
 
@@ -122,6 +123,7 @@ func (pm PizzaModel) Get(id int64) (*Pizza, error) {
 		&pizza.Sauciness,
 		&pizza.Saltiness,
 		&pizza.Charness,
+		&pizza.ImageId,
 	)
 
 	if err != nil {
@@ -145,8 +147,9 @@ func (pm PizzaModel) Update(pizza *Pizza) error {
 		flavor = $4, 
 		sauciness = $5, 
 		saltiness = $6, 
-		charness = $7
-		WHERE id = $8
+		charness = $7,
+		image_id = $8
+		WHERE id = $9
 		RETURNING id
 	`
 
@@ -158,6 +161,7 @@ func (pm PizzaModel) Update(pizza *Pizza) error {
 		pizza.Sauciness,
 		pizza.Saltiness,
 		pizza.Charness,
+		pizza.ImageId,
 		pizza.ID,
 	}
 
