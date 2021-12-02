@@ -51,14 +51,99 @@ func (im ImageModel) Insert(image *Image) error {
 }
 
 func (im ImageModel) Get(id int64) (*Image, error) {
-	return nil, nil
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	query := `
+		SELECT id, 
+		filename,
+		content_type,
+		location
+		FROM pizzas WHERE id = $1
+	`
+
+	var image Image
+	// 3-second timeout deadline
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	// release resources associated with context before Get() is returned
+	// memory leak avoided
+	defer cancel()
+
+	err := im.DB.QueryRowContext(ctx, query, id).Scan(
+		&image.Filename,
+		&image.ContentType,
+		&image.Location,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &image, nil
 }
 
 func (im ImageModel) Update(image *Image) error {
+	query := `
+		UPDATE images
+		SET filename = $1,
+		content_type = $2, 
+		location = $3, 
+		WHERE id = $4
+		RETURNING id
+	`
+
+	args := []interface{}{
+		image.Filename,
+		image.ContentType,
+		image.Location,
+		image.ID,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	defer cancel()
+	// query and scan the new value in
+	err := im.DB.QueryRowContext(ctx, query, args...).Scan(&image.ID)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
 	return nil
 }
 
 func (im ImageModel) Delete(id int64) error {
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+
+	query := `
+		DELETE FROM images
+		WHERE id = $1`
+
+	result, err := im.DB.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return ErrRecordNotFound
+	}
+	
 	return nil
 }
 
