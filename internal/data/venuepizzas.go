@@ -3,19 +3,16 @@ package data
 import (
 	"time"
 	"database/sql"
-	_ "errors"
+	"errors"
 	"context"
 	_ "fmt"
-
-	"github.com/tclohm/project-pizza/internal/validator"
-
 	_ "github.com/lib/pq"
 )
 
 type VenuePizza struct {
 	ID int64 `json:"id"`
-	venueId int64 `json:"venue_id"`
-	pizzaId int64 `json:"pizza_id"`
+	VenueId int64 `json:"venue_id"`
+	PizzaId int64 `json:"pizza_id"`
 }
 
 type VenuePizzaModel struct {
@@ -33,7 +30,7 @@ func (vpm VenuePizzaModel) Insert(venuePizza *VenuePizza) error {
 	`
 	// args slices containing values for the placeholder parameters from the venue struct
 	args := []interface{}{
-		venuePizza.venue_id, venuePizza.pizza_id
+		venuePizza.VenueId, venuePizza.PizzaId,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
@@ -65,7 +62,7 @@ func (vpm VenuePizzaModel) Get(id int64) (*VenuePizza, error) {
 	err := vpm.DB.QueryRowContext(ctx, query, id).Scan(
 		&venuepizza.ID,
 		&venuepizza.VenueId,
-		&venuepizza.PizzaId
+		&venuepizza.PizzaId,
 	)
 
 	if err != nil {
@@ -92,7 +89,7 @@ func (vpm VenuePizzaModel) Update(venuePizza *VenuePizza) error {
 	args := []interface{}{
 		venuePizza.VenueId,
 		venuePizza.PizzaId,
-		venuePizza.ID
+		venuePizza.ID,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)

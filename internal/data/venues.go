@@ -3,7 +3,7 @@ package data
 import (
 	"time"
 	"database/sql"
-	_ "errors"
+	"errors"
 	"context"
 	_ "fmt"
 
@@ -24,8 +24,6 @@ func ValidateVenue(v *validator.Validator, venue *Venue) {
 	v.Check(venue.Name != "", "name", "must be provided")
 	v.Check(len(venue.Name) < 500, "name", "must not be more than 500 bytes long")
 	v.Check(venue.Address != "", "address", "must be provided")
-	v.Check(venue.Lat != "", "Lat", "must be provided")
-	v.Check(venue.Lon != "", "Lon", "must be provided")
 }
 
 type VenueModel struct {
@@ -45,7 +43,7 @@ func (vm VenueModel) Insert(venue *Venue) error {
 	`
 	// args slices containing values for the placeholder parameters from the venue struct
 	args := []interface{}{
-		venue.Name, venue.Lat, venue.Lon, venue.Address
+		venue.Name, venue.Lat, venue.Lon, venue.Address,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
@@ -55,7 +53,7 @@ func (vm VenueModel) Insert(venue *Venue) error {
 	return vm.DB.QueryRowContext(ctx, query, args...).Scan(&venue.ID)
 }
 
-func (vm VenueModel) Get(id int64) (*venue, error) {
+func (vm VenueModel) Get(id int64) (*Venue, error) {
 	if id < 1 {
 		return nil, ErrRecordNotFound
 	}
@@ -69,7 +67,7 @@ func (vm VenueModel) Get(id int64) (*venue, error) {
 	FROM venues WHERE id = $1
 	`
 
-	var venue venue
+	var venue Venue
 	// 3-second timeout deadline
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
 	// release resources associated with context before Get() is returned
@@ -96,7 +94,7 @@ func (vm VenueModel) Get(id int64) (*venue, error) {
 	return &venue, nil
 }
 
-func (vm VenueModel) Update(venue *venue) error {
+func (vm VenueModel) Update(venue *Venue) error {
 	query := `
 		UPDATE venues
 		SET name = $1,
