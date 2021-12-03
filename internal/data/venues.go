@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"context"
-	_ "fmt"
+	_"fmt"
 
 	"github.com/tclohm/project-pizza/internal/validator"
 
@@ -36,9 +36,8 @@ func (vm VenueModel) Insert(venue *Venue) error {
 		name, 
 		lat,
 		lon,
-		address,
-	)
-	VALUES ($1, $2, $3, $4)
+		address
+	) VALUES ($1, $2, $3, $4)
 	RETURNING id
 	`
 	// args slices containing values for the placeholder parameters from the venue struct

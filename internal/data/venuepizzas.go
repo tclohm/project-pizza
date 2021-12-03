@@ -138,15 +138,15 @@ func (vpm VenuePizzaModel) Delete(id int64) error {
 
 type MockVenuePizzaModel struct {}
 
-func (vpm MockVenuePizzaModel) Insert(venue *Venue) error {
+func (vpm MockVenuePizzaModel) Insert(venuePizza *VenuePizza) error {
 	return nil
 }
 
-func (vpm MockVenuePizzaModel) Get(id int64) (*Venue, error) {
+func (vpm MockVenuePizzaModel) Get(id int64) (*VenuePizza, error) {
 	return nil, nil
 }
 
-func (vpm MockVenuePizzaModel) Update(venue *Venue) error {
+func (vpm MockVenuePizzaModel) Update(venuePizza *VenuePizza) error {
 	return nil
 }
 
