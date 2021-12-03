@@ -3,14 +3,15 @@ package main
 import (
 	"fmt"
 	"net/http"
-	_ "strconv"
-	_ "errors"
+	"strconv"
+	"errors"
+	"os"
 	"io/ioutil"
 
 	"github.com/tclohm/project-pizza/internal/data"
 	"github.com/tclohm/project-pizza/internal/validator"
 
-	_ "github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 )
 
 func (app *application) createImageHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,4 +68,34 @@ func (app *application) createImageHandler(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *application) showImageHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	n, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	image, err := app.models.Images.Get(n)
+
+	if err != nil {
+		switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				app.notFoundResponse(w, r)
+			default:
+				app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	fileURL := "%s%s"
+	fileURL = fmt.Sprintf(fileURL, os.Getenv("FILEPATH"), image.Location)
+
+	fmt.Println(fileURL)
+
+	http.ServeFile(w, r, fileURL)
 }
