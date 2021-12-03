@@ -60,7 +60,7 @@ func (im ImageModel) Get(id int64) (*Image, error) {
 		filename,
 		content_type,
 		location
-		FROM pizzas WHERE id = $1
+		FROM images WHERE id = $1
 	`
 
 	var image Image
@@ -71,6 +71,7 @@ func (im ImageModel) Get(id int64) (*Image, error) {
 	defer cancel()
 
 	err := im.DB.QueryRowContext(ctx, query, id).Scan(
+		&image.ID,
 		&image.Filename,
 		&image.ContentType,
 		&image.Location,

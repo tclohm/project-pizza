@@ -92,10 +92,5 @@ func (app *application) showImageHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	fileURL := "%s%s"
-	fileURL = fmt.Sprintf(fileURL, os.Getenv("FILEPATH"), image.Location)
-
-	fmt.Println(fileURL)
-
-	http.ServeFile(w, r, fileURL)
+	http.ServeFile(w, r, os.Getenv("FILEPATH") + image.Location)
 }
