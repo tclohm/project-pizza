@@ -94,3 +94,30 @@ func (app *application) showImageHandler(w http.ResponseWriter, r *http.Request)
 
 	http.ServeFile(w, r, os.Getenv("FILEPATH") + image.Location)
 }
+
+func (app *application) deleteImageHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	n, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	err = app.models.Images.Delete(n)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "image successfully deleted"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
