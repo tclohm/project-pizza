@@ -7,12 +7,19 @@ import (
 	"context"
 	_ "fmt"
 	_ "github.com/lib/pq"
+
+	"github.com/tclohm/project-pizza/internal/validator"
 )
 
 type VenuePizza struct {
 	ID int64 `json:"id"`
 	VenueId int64 `json:"venue_id"`
 	PizzaId int64 `json:"pizza_id"`
+}
+
+func ValidateVenuePizza(v *validator.Validator, venuepizza *VenuePizza) {
+	v.Check(venuepizza.PizzaId > 0, "pizza id", "must be greater than 0")
+	v.Check(venuepizza.VenueId > 0, "venue id", "must be greater than 0")
 }
 
 type VenuePizzaModel struct {
@@ -22,10 +29,8 @@ type VenuePizzaModel struct {
 func (vpm VenuePizzaModel) Insert(venuePizza *VenuePizza) error {
 	query := `
 	INSERT INTO venuepizzas (
-		venue_id,
-		pizza_id,
-	)
-	VALUES ($1, $2)
+		venue_id, pizza_id
+	) VALUES ($1, $2)
 	RETURNING id
 	`
 	// args slices containing values for the placeholder parameters from the venue struct

@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
+	"errors"
 
 	"github.com/tclohm/project-pizza/internal/data"
 	"github.com/tclohm/project-pizza/internal/validator"
 
-	_"github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 )
 
 func (app *application) createVenuePizzaHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,9 +24,11 @@ func (app *application) createVenuePizzaHandler(w http.ResponseWriter, r *http.R
 	}
 
 	venuepizza := &data.VenuePizza{
-		VenueId: input.venue_id,
-		PizzaId: input.pizza_id,
+		VenueId: input.VenueId,
+		PizzaId: input.PizzaId,
 	}
+
+	fmt.Println(venuepizza)
 
 	v := validator.New()
 
@@ -40,7 +44,7 @@ func (app *application) createVenuePizzaHandler(w http.ResponseWriter, r *http.R
 	}
 
 	headers := make(http.Header)
-	headers.Set("Location", fmt.Sprinf("/v1/venuepizza/%d", venuepizza.ID))
+	headers.Set("Location", fmt.Sprintf("/v1/venuepizza/%d", venuepizza.ID))
 
 	err = app.writeJSON(w, http.StatusCreated, envelope{"venuepizza": venuepizza}, headers)
 	if err != nil {
@@ -50,7 +54,7 @@ func (app *application) createVenuePizzaHandler(w http.ResponseWriter, r *http.R
 
 
 func (app *application) updateVenuePizzaHandler(w http.ResponseWriter, r *http.Request) {
-	var mux.Vars(r)
+	vars := mux.Vars(r)
 	id := vars["id"]
 
 	n, err := strconv.ParseInt(id, 10, 64)
@@ -71,8 +75,8 @@ func (app *application) updateVenuePizzaHandler(w http.ResponseWriter, r *http.R
 	}
 
 	var input struct {
-		VenueId int64 `json:"venue_id"`
-		PizzaId int64 `json:"pizza_id"`
+		VenueId *int64 `json:"venue_id"`
+		PizzaId *int64 `json:"pizza_id"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -91,12 +95,12 @@ func (app *application) updateVenuePizzaHandler(w http.ResponseWriter, r *http.R
 
 	v := validator.New()
 
-	if data.ValidateVenuePizza(v, venuepizza); !v.Venue() {
+	if data.ValidateVenuePizza(v, venuepizza); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	err = app.models.VenuePizzas.Update(venue)
+	err = app.models.VenuePizzas.Update(venuepizza)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrEditConflict):
@@ -107,14 +111,14 @@ func (app *application) updateVenuePizzaHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"venue": venue}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"venuepizza": venuepizza}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }
 
 func (app *application) deleteVenuePizzaHandler(w http.ResponseWriter, r *http.Request) {
-	var mux.Vars(r)
+	vars := mux.Vars(r)
 	id := vars["id"]
 
 	n, err := strconv.ParseInt(id, 10, 64)
