@@ -28,8 +28,6 @@ func (app *application) createVenuePizzaHandler(w http.ResponseWriter, r *http.R
 		PizzaId: input.PizzaId,
 	}
 
-	fmt.Println(venuepizza)
-
 	v := validator.New()
 
 	if data.ValidateVenuePizza(v, venuepizza); !v.Valid() {
