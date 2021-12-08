@@ -69,7 +69,7 @@ func (pm PizzaModel) Insert(pizza *Pizza) error {
 		saltiness, 
 		charness,
 		image_id
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	RETURNING id
 	`
 	// args slices containing values for the placeholder parameters from the pizza struct

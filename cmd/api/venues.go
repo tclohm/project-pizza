@@ -56,7 +56,7 @@ func (app *application) createVenueHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) updateVenueHandler(w http.ResponseWriter, r *http.Request) {
-	var mux.Vars(r)
+	vars := mux.Vars(r)
 	id := vars["id"]
 
 	n, err := strconv.ParseInt(id, 10, 64)
@@ -65,7 +65,7 @@ func (app *application) updateVenueHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	venue, err := app.models.Venue.Get(n)
+	venue, err := app.models.Venues.Get(n)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -107,7 +107,7 @@ func (app *application) updateVenueHandler(w http.ResponseWriter, r *http.Reques
 
 	v := validator.New()
 
-	if data.ValidateVenue(v, venue); !v.Venue() {
+	if data.ValidateVenue(v, venue); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}

@@ -22,6 +22,7 @@ func (app *application) createPizzaHandler(w http.ResponseWriter, r *http.Reques
 		Sauciness 			float32 `json:"sauciness"`
 		Saltiness 			float32 `json:"saltiness"`
 		Charness 			float32 `json:"charness"`
+		ImageId				int64 `json:"image_id"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -39,6 +40,7 @@ func (app *application) createPizzaHandler(w http.ResponseWriter, r *http.Reques
 		Sauciness: 			input.Sauciness,
 		Saltiness: 			input.Saltiness,
 		Charness: 			input.Charness,
+		ImageId:			input.ImageId,
 	}
 
 	v := validator.New()
@@ -122,6 +124,8 @@ func (app *application) updatePizzaHandler(w http.ResponseWriter, r *http.Reques
 		Sauciness 			*float32 `json:"sauciness"`
 		Saltiness 			*float32 `json:"saltiness"`
 		Charness 			*float32 `json:"charness"`
+		ImageId				*int64 	 `json:image_id`
+
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -160,7 +164,11 @@ func (app *application) updatePizzaHandler(w http.ResponseWriter, r *http.Reques
 
 	if input.Charness != nil {
 		pizza.Charness = *input.Charness
-	} 	
+	} 
+
+	if input.ImageId != nil {
+		pizza.ImageId = *input.ImageId
+	}	
 
 
 	v := validator.New()
