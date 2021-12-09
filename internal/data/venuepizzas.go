@@ -140,6 +140,18 @@ func (vpm VenuePizzaModel) Delete(id int64) error {
 	return nil
 }
 
+func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzas, error) {
+	query := `
+	select * FROM pizzas 
+	JOIN images 
+	ON pizzas.image_id = images.id
+	JOIN venuepizzas
+	ON pizzas.id = venuepizzas.pizza_id
+	JOIN venues
+	ON venues.id = venuepizzas.venue_id
+	`
+}
+
 
 type MockVenuePizzaModel struct {}
 

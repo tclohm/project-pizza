@@ -50,7 +50,6 @@ func (app *application) createVenuePizzaHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
-
 func (app *application) updateVenuePizzaHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -140,4 +139,9 @@ func (app *application) deleteVenuePizzaHandler(w http.ResponseWriter, r *http.R
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+
+func (app *application) listVenuePizzaHandler(w http.ResponseWriter, r *http.Request) {
+	err = app.models.VenuePizzas.GetAll()
 }
