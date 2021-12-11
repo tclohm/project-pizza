@@ -35,6 +35,7 @@ type Models struct {
 		Get(id int64) (*VenuePizza, error)
 		Update(venuePizza *VenuePizza) error
 		Delete(id int64) error
+		GetAll() ([]*VenuePizzaMixin, error)
 	}
 
 }

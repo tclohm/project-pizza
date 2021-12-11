@@ -17,6 +17,23 @@ type VenuePizza struct {
 	PizzaId int64 `json:"pizza_id"`
 }
 
+type VenuePizzaMixin struct {
+	ID 					int64 		`json:"id"`
+	PizzaName 			string 		`json:"pizza_name"`
+	PizzaStyle 			string 		`json:"pizza_style"`
+	Cheesiness 			float32 	`json:"cheesiness"`
+	Flavor				float32		`json:"flavor"`
+	Sauciness 			float32 	`json:"sauciness"`
+	Saltiness  			float32 	`json:"saltiness"`
+	Charness 			float32 	`json:"charness"`
+	PizzaImageFilename 	string 		`json:"pizza_image_filename"`
+	PizzaImageID		int64 		`json:"pizza_image_id"`
+	VenueName 			string 		`json:"venue_name"`
+	VenueLat 			float64 	`json:"venue_lat"`
+	VenueLon 			float64 	`json:"venue_lon"` 			
+	VenueAddress 		string 		`json:"venue_address"`
+}
+
 func ValidateVenuePizza(v *validator.Validator, venuepizza *VenuePizza) {
 	v.Check(venuepizza.PizzaId > 0, "pizza id", "must be greater than 0")
 	v.Check(venuepizza.VenueId > 0, "venue id", "must be greater than 0")
@@ -140,9 +157,24 @@ func (vpm VenuePizzaModel) Delete(id int64) error {
 	return nil
 }
 
-func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzas, error) {
+func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 	query := `
-	select * FROM pizzas 
+	select 
+	venuepizzas.id,
+	pizzas.name as pizza_name,
+	pizzas.style as pizza_style,
+	pizzas.cheesiness,
+	pizzas.flavor,
+	pizzas.sauciness,
+	pizzas.saltiness,
+	pizzas.charness,
+	images.filename,
+	images.id as pizza_image_id,
+	venues.name as venue_name,
+	venues.lat,
+	venues.lon,
+	venues.address
+	FROM pizzas 
 	JOIN images 
 	ON pizzas.image_id = images.id
 	JOIN venuepizzas
@@ -150,6 +182,54 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzas, error) {
 	JOIN venues
 	ON venues.id = venuepizzas.venue_id
 	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	defer cancel()
+
+	args := []interface{}{}
+
+	rows, err := vpm.DB.QueryContext(ctx, query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	venuepizzas := []*VenuePizzaMixin{}
+
+	for rows.Next() {
+		var venuepizzaMixin VenuePizzaMixin
+
+		err := rows.Scan(
+			&venuepizzaMixin.ID,
+			&venuepizzaMixin.PizzaName,
+			&venuepizzaMixin.PizzaStyle,
+			&venuepizzaMixin.Cheesiness,
+			&venuepizzaMixin.Flavor,
+			&venuepizzaMixin.Sauciness,
+			&venuepizzaMixin.Saltiness,
+			&venuepizzaMixin.Charness,
+			&venuepizzaMixin.PizzaImageFilename,
+			&venuepizzaMixin.PizzaImageID,
+			&venuepizzaMixin.VenueName,
+			&venuepizzaMixin.VenueLat,
+			&venuepizzaMixin.VenueLon,
+			&venuepizzaMixin.VenueAddress,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		venuepizzas = append(venuepizzas, &venuepizzaMixin)
+
+		if err = rows.Err(); err != nil {
+			return nil, err
+		}
+
+	}
+	return venuepizzas, nil
 }
 
 
@@ -169,4 +249,8 @@ func (vpm MockVenuePizzaModel) Update(venuePizza *VenuePizza) error {
 
 func (vpm MockVenuePizzaModel) Delete(id int64) error {
 	return nil
+}
+
+func (vpm MockVenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
+	return nil, nil
 }
