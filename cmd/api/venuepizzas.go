@@ -143,5 +143,14 @@ func (app *application) deleteVenuePizzaHandler(w http.ResponseWriter, r *http.R
 
 
 func (app *application) listVenuePizzaHandler(w http.ResponseWriter, r *http.Request) {
-	err = app.models.VenuePizzas.GetAll()
+	venuepizzas, err := app.models.VenuePizzas.GetAll()
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"venuepizzas": venuepizzas}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
