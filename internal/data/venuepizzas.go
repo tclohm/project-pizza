@@ -29,8 +29,8 @@ type VenuePizzaMixin struct {
 	PizzaImageFilename 	string 		`json:"pizza_image_filename"`
 	PizzaImageID		int64 		`json:"pizza_image_id"`
 	VenueName 			string 		`json:"venue_name"`
-	VenueLat 			float64 	`json:"venue_lat"`
-	VenueLon 			float64 	`json:"venue_lon"` 			
+	Lat 				float64 	`json:"lat"`
+	Lon 				float64 	`json:"lon"` 			
 	VenueAddress 		string 		`json:"venue_address"`
 }
 
@@ -213,8 +213,8 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 			&venuepizzaMixin.PizzaImageFilename,
 			&venuepizzaMixin.PizzaImageID,
 			&venuepizzaMixin.VenueName,
-			&venuepizzaMixin.VenueLat,
-			&venuepizzaMixin.VenueLon,
+			&venuepizzaMixin.Lat,
+			&venuepizzaMixin.Lon,
 			&venuepizzaMixin.VenueAddress,
 		)
 
