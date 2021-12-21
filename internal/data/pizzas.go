@@ -16,6 +16,7 @@ type Pizza struct {
 	ID int64 `json:"id"`
 	Name string `json:"name"`
 	Style string `json:"style"`
+	Price float32 `json:"price"`
 	Description string `json:"description"`
 	Cheesiness float32 `json:"cheesiness"`
 	Flavor float32 `json:"flavor"`
@@ -32,6 +33,9 @@ func ValidatePizza(v *validator.Validator, pizza *Pizza) {
 
 	v.Check(pizza.Style != "", "style", "must be provided")
 	v.Check(len(pizza.Style) < 500, "style", "must not be more than 500 bytes long")
+
+	v.Check(pizza.Price >= 0, "price", "must be above 0")
+	v.Check(pizza.Price <= 500, "style", "must below 500")
 
 	v.Check(pizza.Description != "", "description", "must be provided")
 	v.Check(len(pizza.Description) < 500, "description", "must not be more than 500 bytes long")
