@@ -65,7 +65,8 @@ func (pm PizzaModel) Insert(pizza *Pizza) error {
 	query := `
 	INSERT INTO pizzas (
 		name, 
-		style, 
+		style,
+		price, 
 		description, 
 		cheesiness, 
 		flavor, 
@@ -73,12 +74,12 @@ func (pm PizzaModel) Insert(pizza *Pizza) error {
 		saltiness, 
 		charness,
 		image_id
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	RETURNING id
 	`
 	// args slices containing values for the placeholder parameters from the pizza struct
 	args := []interface{}{
-		pizza.Name, pizza.Style, pizza.Description, pizza.Cheesiness, 
+		pizza.Name, pizza.Style, pizza.Price, pizza.Description, pizza.Cheesiness, 
 		pizza.Flavor, pizza.Sauciness, pizza.Saltiness, pizza.Charness,
 		pizza.ImageId,
 	}
@@ -99,6 +100,7 @@ func (pm PizzaModel) Get(id int64) (*Pizza, error) {
 		SELECT id, 
 		name,
 		style,
+		price,
 		description, 
 		cheesiness, 
 		flavor, 
@@ -120,6 +122,7 @@ func (pm PizzaModel) Get(id int64) (*Pizza, error) {
 		&pizza.ID,
 		&pizza.Name,
 		&pizza.Style,
+		&pizza.Price,
 		&pizza.Description,
 		&pizza.Cheesiness,
 		&pizza.Flavor,
@@ -145,19 +148,23 @@ func (pm PizzaModel) Update(pizza *Pizza) error {
 	query := `
 		UPDATE pizzas
 		SET name = $1,
-		description = $2, 
-		cheesiness = $3, 
-		flavor = $4, 
-		sauciness = $5, 
-		saltiness = $6, 
-		charness = $7,
-		image_id = $8
-		WHERE id = $9
+		style = $2,
+		price = $3
+		description = $4, 
+		cheesiness = $5, 
+		flavor = $6, 
+		sauciness = $7, 
+		saltiness = $8, 
+		charness = $9,
+		image_id = $10
+		WHERE id = $11
 		RETURNING id
 	`
 
 	args := []interface{}{
 		pizza.Name,
+		pizza.Style,
+		pizza.Price,
 		pizza.Description,
 		pizza.Cheesiness,
 		pizza.Flavor,
@@ -217,6 +224,7 @@ func (pm PizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizz
 		id,
 		name,
 		style,
+		price,
 		description, 
 		cheesiness, 
 		flavor, 
@@ -253,6 +261,7 @@ func (pm PizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizz
 			&pizza.ID,
 			&pizza.Name,
 			&pizza.Style,
+			&pizza.Price,
 			&pizza.Description, 
 			&pizza.Cheesiness, 
 			&pizza.Flavor, 

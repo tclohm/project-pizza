@@ -21,6 +21,7 @@ type VenuePizzaMixin struct {
 	ID 					int64 		`json:"id"`
 	PizzaName 			string 		`json:"pizza_name"`
 	PizzaStyle 			string 		`json:"pizza_style"`
+	PizzaPrice			float32 	`json:"price"`
 	Cheesiness 			float32 	`json:"cheesiness"`
 	Flavor				float32		`json:"flavor"`
 	Sauciness 			float32 	`json:"sauciness"`
@@ -163,6 +164,7 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 	venuepizzas.id,
 	pizzas.name as pizza_name,
 	pizzas.style as pizza_style,
+	pizzas.price,
 	pizzas.cheesiness,
 	pizzas.flavor,
 	pizzas.sauciness,
@@ -205,6 +207,7 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 			&venuepizzaMixin.ID,
 			&venuepizzaMixin.PizzaName,
 			&venuepizzaMixin.PizzaStyle,
+			&venuepizzaMixin.PizzaPrice,
 			&venuepizzaMixin.Cheesiness,
 			&venuepizzaMixin.Flavor,
 			&venuepizzaMixin.Sauciness,
