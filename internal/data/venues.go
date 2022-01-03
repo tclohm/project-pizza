@@ -31,25 +31,46 @@ type VenueModel struct {
 }
 
 func (vm VenueModel) Insert(venue *Venue) error {
-	query := `
-	INSERT INTO venues (
-		name, 
-		lat,
-		lon,
-		address
-	) VALUES ($1, $2, $3, $4)
-	RETURNING id
-	`
-	// args slices containing values for the placeholder parameters from the venue struct
+
+	query := `SELECT id FROM venues WHERE name = $1 RETURNING id`
+
 	args := []interface{}{
-		venue.Name, venue.Lat, venue.Lon, venue.Address,
+		venue.Name,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
 	defer cancel()
 
-	// passing in the slice and scanning the system generated id
-	return vm.DB.QueryRowContext(ctx, query, args...).Scan(&venue.ID)
+	exist := vm.DB.QueryRowContext(ctx, query, args...).Scan(&venue.ID)
+
+	if exist != nil && errors.Is(exist, sql.ErrNoRows) {
+
+		query = `
+		INSERT INTO venues (
+			name, 
+			lat,
+			lon,
+			address
+		) VALUES ($1, $2, $3, $4)
+		RETURNING id
+		`
+		// args slices containing values for the placeholder parameters from the venue struct
+		args = []interface{}{
+			venue.Name, venue.Lat, venue.Lon, venue.Address,
+		}
+
+		ctx, cancel = context.WithTimeout(context.Background(), 3 * time.Second)
+		defer cancel()
+
+		// passing in the slice and scanning the system generated id
+		return vm.DB.QueryRowContext(ctx, query, args...).Scan(&venue.ID)
+		
+	}
+
+
+	return exist
+
+	
 }
 
 func (vm VenueModel) Get(id int64) (*Venue, error) {
