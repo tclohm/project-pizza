@@ -32,7 +32,7 @@ type VenueModel struct {
 
 func (vm VenueModel) Insert(venue *Venue) error {
 
-	query := `SELECT id FROM venues WHERE name = $1 RETURNING id`
+	query := `SELECT id FROM venues WHERE name = $1`
 
 	args := []interface{}{
 		venue.Name,
