@@ -229,7 +229,7 @@ func (vpm VenuePizzaModel) Delete(id int64) error {
 
 func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 	query := `
-	select 
+	select
 	venuepizzas.id,
 	pizzas.name as pizza_name,
 	pizzas.style as pizza_style,
