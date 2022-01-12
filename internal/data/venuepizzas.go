@@ -33,6 +33,7 @@ type VenuePizzaMixin struct {
 	Lat 				float64 	`json:"lat"`
 	Lon 				float64 	`json:"lon"` 			
 	VenueAddress 		string 		`json:"venue_address"`
+	CreatedAt			time.Time 	`json:"created_at"`
 }
 
 func ValidateVenuePizza(v *validator.Validator, venuepizza *VenuePizza) {
@@ -244,7 +245,8 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 	venues.name as venue_name,
 	venues.lat,
 	venues.lon,
-	venues.address
+	venues.address,
+	pizzas.created_at
 	FROM pizzas 
 	JOIN images 
 	ON pizzas.image_id = images.id
@@ -288,6 +290,7 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 			&venuepizzaMixin.Lat,
 			&venuepizzaMixin.Lon,
 			&venuepizzaMixin.VenueAddress,
+			&venuepizzaMixin.CreatedAt,
 		)
 
 		if err != nil {
