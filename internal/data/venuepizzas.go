@@ -17,8 +17,7 @@ type VenuePizza struct {
 	PizzaId int64 `json:"pizza_id"`
 }
 
-type VenuePizzaMixin struct {
-	ID 					int64 		`json:"id"`
+type PizzaReviewed struct {
 	VenueId 			int64 		`json:"venue_id"`
 	PizzaId 			int64 		`json:"pizza_id"`
 	PizzaName 			string 		`json:"pizza_name"`
@@ -31,20 +30,17 @@ type VenuePizzaMixin struct {
 	Charness 			float32 	`json:"charness"`
 	PizzaImageFilename 	string 		`json:"pizza_image_filename"`
 	PizzaImageID		int64 		`json:"pizza_image_id"`
-	VenueName 			string 		`json:"venue_name"`
-	Lat 				float64 	`json:"lat"`
-	Lon 				float64 	`json:"lon"` 			
-	VenueAddress 		string 		`json:"venue_address"`
+	PizzaLocation		string 		`json:"pizza_image_location"`
 	CreatedAt			time.Time 	`json:"created_at"`
 }
 
-type VenueWithPizzaMixin struct {
-	ID 					int64 		`json:"id"`
-	VenueId 			int64 		`json:"venue_id"`
-	Lat 				float64 	`json:"lat"`
-	Lon 				float64 	`json:"lon"` 			
-	VenueAddress 		string 		`json:"venue_address"`
-	PizzaOpinions		[]Pizza 	`json:"pizza_opinions"`
+type VenuePizzaMixin struct {
+	VenueId 			int64 			 `json:"venue_id"`
+	VenueName 			string 			 `json:"venue_name"`
+	Lat 				float64 		 `json:"lat"`
+	Lon 				float64 		 `json:"lon"` 			
+	VenueAddress 		string 			 `json:"venue_address"`
+	Pizzas  			[]*PizzaReviewed `json:"pizzas"`
 }
 
 func ValidateVenuePizza(v *validator.Validator, venuepizza *VenuePizza) {
@@ -171,81 +167,125 @@ func (vpm VenuePizzaModel) Delete(id int64) error {
 }
 
 func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
-	query := `
+
+	venue_query := `
 	select
-	venuepizzas.id,
 	venues.id as venue_id,
-	pizzas.id as pizza_id,
-	pizzas.name as pizza_name,
-	pizzas.style as pizza_style,
-	pizzas.price,
-	pizzas.cheesiness,
-	pizzas.flavor,
-	pizzas.sauciness,
-	pizzas.saltiness,
-	pizzas.charness,
-	images.filename,
-	images.id as pizza_image_id,
 	venues.name as venue_name,
 	venues.lat,
 	venues.lon,
-	venues.address,
-	pizzas.created_at
-	FROM pizzas 
-	JOIN images 
-	ON pizzas.image_id = images.id
+	venues.address as venue_address
+	FROM venues 
 	JOIN venuepizzas
-	ON pizzas.id = venuepizzas.pizza_id
-	JOIN venues
 	ON venues.id = venuepizzas.venue_id
+	GROUP BY venues.id
 	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
 	defer cancel()
 
-	args := []interface{}{}
+	venue_args := []interface{}{}
 
-	rows, err := vpm.DB.QueryContext(ctx, query, args...)
+	venue_rows, err := vpm.DB.QueryContext(ctx, venue_query, venue_args...)
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer rows.Close()
+	defer venue_rows.Close()
 
 	venuepizzas := []*VenuePizzaMixin{}
 
-	for rows.Next() {
+	for venue_rows.Next() {
 		var venuepizzaMixin VenuePizzaMixin
+		var pizzas = []*PizzaReviewed{}
 
-		err := rows.Scan(
-			&venuepizzaMixin.ID,
+		err := venue_rows.Scan(
 			&venuepizzaMixin.VenueId,
-			&venuepizzaMixin.PizzaId,
-			&venuepizzaMixin.PizzaName,
-			&venuepizzaMixin.PizzaStyle,
-			&venuepizzaMixin.PizzaPrice,
-			&venuepizzaMixin.Cheesiness,
-			&venuepizzaMixin.Flavor,
-			&venuepizzaMixin.Sauciness,
-			&venuepizzaMixin.Saltiness,
-			&venuepizzaMixin.Charness,
-			&venuepizzaMixin.PizzaImageFilename,
-			&venuepizzaMixin.PizzaImageID,
 			&venuepizzaMixin.VenueName,
 			&venuepizzaMixin.Lat,
 			&venuepizzaMixin.Lon,
 			&venuepizzaMixin.VenueAddress,
-			&venuepizzaMixin.CreatedAt,
 		)
 
 		if err != nil {
 			return nil, err
 		}
 
+
+		pizza_queries_for_venue := `
+		select 
+			venuepizzas.venue_id as venue_id,
+			pizzas.id as pizza_id,
+			pizzas.name as pizza_name,
+			pizzas.style as pizza_style,
+			pizzas.price as pizza_price,
+			pizzas.cheesiness,
+			pizzas.flavor,
+			pizzas.sauciness,
+			pizzas.saltiness,
+			pizzas.charness,
+			images.filename as pizza_image_filename,
+			images.id as pizza_image_id,
+			images.location as pizza_image_location,
+			pizzas.created_at
+		FROM venues
+		JOIN venuepizzas
+		ON venues.id = venuepizzas.venue_id
+		JOIN pizzas
+		ON pizzas.id = venuepizzas.pizza_id
+		JOIN images
+		ON pizzas.image_id = images.id
+		`
+
+		pizza_args := []interface{}{}
+
+		pizza_rows, err := vpm.DB.QueryContext(ctx, pizza_queries_for_venue, pizza_args...)
+
+		if err != nil {
+			return nil, err
+		}
+
+		defer pizza_rows.Close()
+
+		for pizza_rows.Next() {
+			var pizzaReviewed PizzaReviewed
+
+			err := pizza_rows.Scan(
+				&pizzaReviewed.VenueId,
+				&pizzaReviewed.PizzaId,
+				&pizzaReviewed.PizzaName,
+				&pizzaReviewed.PizzaStyle,
+				&pizzaReviewed.PizzaPrice,
+				&pizzaReviewed.Cheesiness,
+				&pizzaReviewed.Flavor,
+				&pizzaReviewed.Sauciness,
+				&pizzaReviewed.Saltiness,
+				&pizzaReviewed.Charness,
+				&pizzaReviewed.PizzaImageFilename,
+				&pizzaReviewed.PizzaImageID,
+				&pizzaReviewed.PizzaLocation,
+				&pizzaReviewed.CreatedAt,
+			)
+
+			if err != nil {
+				return nil, err
+			}
+
+			if pizzaReviewed.VenueId == venuepizzaMixin.VenueId {
+				pizzas = append(pizzas, &pizzaReviewed)
+			}
+
+			if err = pizza_rows.Err(); err != nil {
+				return nil, err
+			}
+		}
+
+		venuepizzaMixin.Pizzas = pizzas
+
 		venuepizzas = append(venuepizzas, &venuepizzaMixin)
 
-		if err = rows.Err(); err != nil {
+		if err = venue_rows.Err(); err != nil {
 			return nil, err
 		}
 
@@ -253,7 +293,6 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 
 	return venuepizzas, nil
 }
-
 
 type MockVenuePizzaModel struct {}
 
