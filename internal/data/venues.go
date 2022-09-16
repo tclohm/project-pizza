@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"context"
-	_"fmt"
+	_ "fmt"
 
 	"github.com/tclohm/project-pizza/internal/validator"
 
@@ -41,7 +41,7 @@ func (vm VenueModel) Insert(venue *Venue) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
 	defer cancel()
 
-	exist := vm.DB.QueryRowContext(ctx, query, args...).Scan(&venue.ID)
+	exist := vm.DB.QueryRowContext(ctx, query, args...).Scan(&venue.Address)
 
 	if exist != nil && errors.Is(exist, sql.ErrNoRows) {
 
