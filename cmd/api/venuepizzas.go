@@ -144,12 +144,35 @@ func (app *application) deleteVenuePizzaHandler(w http.ResponseWriter, r *http.R
 
 func (app *application) listVenuePizzaHandler(w http.ResponseWriter, r *http.Request) {
 	venuepizzas, err := app.models.VenuePizzas.GetAll()
+
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"venuepizzas": venuepizzas}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) listVenuePizzaNestingHandler(w http.ResponseWriter, r *http.Request) {
+	venues, err := app.models.Venues.GetAll(); if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	pizzas, err := app.models.Pizzas.GetAll(); if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	venuepizza, err := app.models.VenuePizzas.GetAll(); if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"pizzas": pizzas, "venues": venues, "vp": "vp"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

@@ -16,7 +16,7 @@ type Models struct {
 		Get(id int64) (*Pizza, error)
 		Update(pizza *Pizza) error
 		Delete(id int64) error
-		GetAll(name string, style string, filters Filters) ([]*Pizza, Metadata, error)
+		GetAll() ([]*Pizza, error)
 	}
 	Images interface {
 		Insert(image *Image) error
@@ -29,6 +29,7 @@ type Models struct {
 		Get(id int64) (*Venue, error)
 		Update(venue *Venue) error
 		Delete(id int64) error
+		GetAll() ([]*Venue, error)
 	}
 	VenuePizzas interface {
 		Insert(venuePizza *VenuePizza) error

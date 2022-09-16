@@ -230,37 +230,14 @@ func (app *application) deletePizzaHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) listPizzasHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Name 		string
-		Style 		string
-		data.Filters
-	}
 
-	v := validator.New()
-
-	qs := r.URL.Query()
-
-	input.Name = app.readString(qs, "name", "")
-	input.Style = app.readString(qs, "style", "")
-
-	input.Page = app.readInt(qs, "page", 1, v)
-	input.PageSize = app.readInt(qs, "page_size", 20, v)
-
-	input.Filters.Sort = app.readString(qs, "sort", "id")
-	input.Filters.SortSafelist = []string{"id", "name", "style", "-id", "-name", "-style"}
-
-	if data.ValidateFilters(v, input.Filters); !v.Valid() {
-		app.failedValidationResponse(w, r, v.Errors)
-		return
-	}
-
-	pizzas, metadata, err := app.models.Pizzas.GetAll(input.Name, input.Style, input.Filters)
+	pizzas, err := app.models.Pizzas.GetAll()
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"pizzas": pizzas, "metadata": metadata}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"pizzas": pizzas}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
