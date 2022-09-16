@@ -19,6 +19,8 @@ type VenuePizza struct {
 
 type VenuePizzaMixin struct {
 	ID 					int64 		`json:"id"`
+	VenueId 			int64 		`json:"venue_id"`
+	PizzaId 			int64 		`json:"pizza_id"`
 	PizzaName 			string 		`json:"pizza_name"`
 	PizzaStyle 			string 		`json:"pizza_style"`
 	PizzaPrice			float32 	`json:"price"`
@@ -34,6 +36,15 @@ type VenuePizzaMixin struct {
 	Lon 				float64 	`json:"lon"` 			
 	VenueAddress 		string 		`json:"venue_address"`
 	CreatedAt			time.Time 	`json:"created_at"`
+}
+
+type VenueWithPizzaMixin struct {
+	ID 					int64 		`json:"id"`
+	VenueId 			int64 		`json:"venue_id"`
+	Lat 				float64 	`json:"lat"`
+	Lon 				float64 	`json:"lon"` 			
+	VenueAddress 		string 		`json:"venue_address"`
+	PizzaOpinions		[]Pizza 	`json:"pizza_opinions"`
 }
 
 func ValidateVenuePizza(v *validator.Validator, venuepizza *VenuePizza) {
@@ -159,79 +170,12 @@ func (vpm VenuePizzaModel) Delete(id int64) error {
 	return nil
 }
 
-// func (pm PizzaModel) GetAll(name string, style string, filters Filters) ([]*Pizza, Metadata, error) {
-// 	query := fmt.Sprintf(`
-// 		SELECT 
-// 		count(*) OVER(),
-// 		id,
-// 		name,
-// 		style,
-// 		price,
-// 		description, 
-// 		cheesiness, 
-// 		flavor, 
-// 		sauciness, 
-// 		saltiness, 
-// 		charness
-// 		FROM pizzas
-// 		WHERE (to_tsvector('simple', name) @@ plainto_tsquery('simple', $1) OR $1 = '')
-// 		AND (LOWER(style) = LOWER($2) OR $2 = '')
-// 		ORDER BY %s %s, id ASC
-// 		LIMIT $3 OFFSET $4`, 
-// 		filters.sortColumn(), filters.sortDirection()) 
-
-// 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
-// 	defer cancel()
-
-// 	args := []interface{}{name, style, filters.limit(), filters.offset()}
-
-// 	rows, err := pm.DB.QueryContext(ctx, query, args...)
-// 	if err != nil {
-// 		return nil, Metadata{}, err
-// 	}
-
-// 	defer rows.Close()
-
-// 	totalRecords := 0
-// 	pizzas := []*Pizza{}
-
-// 	for rows.Next() {
-// 		var pizza Pizza
-
-// 		err := rows.Scan(
-// 			&totalRecords,
-// 			&pizza.ID,
-// 			&pizza.Name,
-// 			&pizza.Style,
-// 			&pizza.Price,
-// 			&pizza.Description, 
-// 			&pizza.Cheesiness, 
-// 			&pizza.Flavor, 
-// 			&pizza.Sauciness, 
-// 			&pizza.Saltiness, 
-// 			&pizza.Charness,
-// 		)
-
-// 		if err != nil {
-// 			return nil, Metadata{}, err
-// 		}
-
-// 		pizzas = append(pizzas, &pizza)
-// 	}
-
-// 	if err = rows.Err(); err != nil {
-// 		return nil, Metadata{}, err
-// 	}
-
-// 	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
-
-// 	return pizzas, metadata, nil
-// }
-
 func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 	query := `
 	select
 	venuepizzas.id,
+	venues.id as venue_id,
+	pizzas.id as pizza_id,
 	pizzas.name as pizza_name,
 	pizzas.style as pizza_style,
 	pizzas.price,
@@ -276,6 +220,8 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 
 		err := rows.Scan(
 			&venuepizzaMixin.ID,
+			&venuepizzaMixin.VenueId,
+			&venuepizzaMixin.PizzaId,
 			&venuepizzaMixin.PizzaName,
 			&venuepizzaMixin.PizzaStyle,
 			&venuepizzaMixin.PizzaPrice,
@@ -304,6 +250,7 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 		}
 
 	}
+
 	return venuepizzas, nil
 }
 

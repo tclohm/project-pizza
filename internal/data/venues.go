@@ -175,6 +175,57 @@ func (vm VenueModel) Delete(id int64) error {
 	return nil
 }
 
+func (vm VenueModel) GetAll() ([]*Venue, error) {
+	query := `
+		SELECT 
+		id, 
+		name, 
+		lat,
+		lon,
+		address
+		FROM venues
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	defer cancel()
+
+	args := []interface{}{}
+
+	rows, err := vm.DB.QueryContext(ctx, query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	venues := []*Venue{}
+
+	for rows.Next() {
+		var venue Venue
+
+		err := rows.Scan(
+			&venue.ID,
+			&venue.Name,
+			&venue.Lat,
+			&venue.Lon,
+			&venue.Address,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		venues = append(venues, &venue)
+
+		if err = rows.Err(); err != nil {
+			return nil, err
+		}
+	}
+
+	return venues, nil
+}
+
 
 type MockVenueModel struct {}
 
@@ -192,4 +243,8 @@ func (vm MockVenueModel) Update(venue *Venue) error {
 
 func (vm MockVenueModel) Delete(id int64) error {
 	return nil
+}
+
+func (vm MockVenueModel) GetAll() ([]*Venue, error) {
+	return nil, nil
 }
