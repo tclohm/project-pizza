@@ -155,15 +155,3 @@ func (app *application) listVenuePizzaHandler(w http.ResponseWriter, r *http.Req
 		app.serverErrorResponse(w, r, err)
 	}
 }
-
-func (app *application) listVenuePizzaNestingHandler(w http.ResponseWriter, r *http.Request) {
-	venuepizza, err := app.models.VenuePizzas.GetAll(); if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-
-	err = app.writeJSON(w, http.StatusOK, envelope{"venuepizzas": venuepizza}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}

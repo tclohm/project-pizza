@@ -236,6 +236,7 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 		ON pizzas.id = venuepizzas.pizza_id
 		JOIN images
 		ON pizzas.image_id = images.id
+		ORDER BY pizzas.created_at DESC
 		`
 
 		pizza_args := []interface{}{}
