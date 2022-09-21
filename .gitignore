@@ -19,3 +19,5 @@ uploads/*
 db/*
 
 .DS_Store
+
+remote/setup/*
