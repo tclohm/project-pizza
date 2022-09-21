@@ -4,6 +4,8 @@ WORKDIR /var/www/app
 
 COPY . .
 
-CMD ["run", "-cors-trusted-origins='http://localhost:3000 http://localhost:3000/*'", "cmd/api"]
+RUN go build ./cmd/api
+
+CMD ["./api", "-cors-trusted-origins='http://localhost:3000 http://localhost:3000/*'"]
 
 EXPOSE 4000
