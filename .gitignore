@@ -22,4 +22,4 @@ db/*
 
 remote/setup/*
 
-Makefile
+Makefilebin/
