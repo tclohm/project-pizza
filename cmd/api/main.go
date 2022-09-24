@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	_ "fmt"
 	"os"
 	"time"
 	"context"
@@ -60,10 +60,10 @@ func main() {
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 
-	connectionString := "host=%s user=%s dbname=%s sslmode=%s"
-	connectionString = fmt.Sprintf(connectionString, os.Getenv("HOSTNAME"), os.Getenv("PSQL_USER"), os.Getenv("PSQL_DATABASE"), "disable")
+	//connectionString := "host=%s user=%s dbname=%s sslmode=%s"
+	//connectionString = fmt.Sprintf(connectionString, os.Getenv("HOSTNAME"), os.Getenv("PSQL_USER"), os.Getenv("PSQL_DATABASE"), "disable")
 
-	flag.StringVar(&cfg.db.dataSource, "db-datasource", connectionString, "PostgreSQL DSN")
+	flag.StringVar(&cfg.db.dataSource, "db-dataSource", os.Getenv("PIZZA_DB_DSN"), "PostgreSQL DSN")
 
 	// limit of open connections
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
