@@ -14,6 +14,7 @@ import (
 
 // I would recommend it, I liked it, It was fine, I didn't like it, It wasn't for for me
 type Review struct {
+	ID 			int64 		`json:"id"`
 	Style 		string 		`json:"style"`
 	Price 		float32 	`json:"price"`
 	Description string 		`json:"description"`
@@ -58,7 +59,7 @@ type ReviewModel struct {
 	DB *sql.DB
 }
 
-func (rm ReviewModel) Insert(review *review) error {
+func (rm ReviewModel) Insert(review *Review) error {
 	query := `
 	INSERT INTO reviews (
 		style,
@@ -91,7 +92,7 @@ func (rm ReviewModel) Insert(review *review) error {
 	return rm.DB.QueryRowContext(ctx, query, args...).Scan(&review.ID)
 }
 
-func (rm ReviewModel) Get(id int64) (*review, error) {
+func (rm ReviewModel) Get(id int64) (*Review, error) {
 	if id < 1 {
 		return nil, ErrRecordNotFound
 	}
@@ -110,7 +111,7 @@ func (rm ReviewModel) Get(id int64) (*review, error) {
 	FROM reviews WHERE id = $1
 	`
 
-	var review review
+	var review Review
 	// 3-second timeout deadline
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
 	// release resources associated with context before Get() is returned
@@ -142,7 +143,7 @@ func (rm ReviewModel) Get(id int64) (*review, error) {
 	return &review, nil
 }
 
-func (rm ReviewModel) Update(review *review) error {
+func (rm ReviewModel) Update(review *Review) error {
 	query := `
 	UPDATE reviews
 		SET
@@ -215,7 +216,7 @@ func (rm ReviewModel) Delete(id int64) error {
 	return nil
 }
 
-func (rm ReviewModel) GetAll() ([]*review, error) {
+func (rm ReviewModel) GetAll() ([]*Review, error) {
 	query := `
 	SELECT 
 		id,
@@ -242,10 +243,10 @@ func (rm ReviewModel) GetAll() ([]*review, error) {
 
 	defer rows.Close()
 
-	reviews := []*review{}
+	reviews := []*Review{}
 
 	for rows.Next() {
-		var review review
+		var review Review
 
 		err := rows.Scan(
 			&review.ID,
