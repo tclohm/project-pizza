@@ -57,7 +57,8 @@ func (pm PizzaModel) Get(id int64) (*Pizza, error) {
 	SELECT id, 
 		name,
 		review_id
-	FROM pizzas WHERE id = $1
+	FROM pizzas 
+	WHERE id = $1
 	`
 
 	var pizza Pizza
@@ -69,16 +70,7 @@ func (pm PizzaModel) Get(id int64) (*Pizza, error) {
 
 	err := pm.DB.QueryRowContext(ctx, query, id).Scan(
 		&pizza.ID,
-		&pizza.Name,
-		&pizza.Style,
-		&pizza.Price,
-		&pizza.Description,
-		&pizza.Cheesiness,
-		&pizza.Flavor,
-		&pizza.Sauciness,
-		&pizza.Saltiness,
-		&pizza.Charness,
-		&pizza.ImageId,
+		&pizza.ReviewId,
 	)
 
 	if err != nil {
@@ -95,32 +87,16 @@ func (pm PizzaModel) Get(id int64) (*Pizza, error) {
 
 func (pm PizzaModel) Update(pizza *Pizza) error {
 	query := `
-		UPDATE pizzas
-		SET name = $1,
-		style = $2,
-		price = $3
-		description = $4, 
-		cheesiness = $5, 
-		flavor = $6, 
-		sauciness = $7, 
-		saltiness = $8, 
-		charness = $9,
-		image_id = $10
-		WHERE id = $11
-		RETURNING id
+	UPDATE pizzas SET 
+		name = $1,
+		review_id = $2
+	WHERE id = $3
+	RETURNING id
 	`
 
 	args := []interface{}{
 		pizza.Name,
-		pizza.Style,
-		pizza.Price,
-		pizza.Description,
-		pizza.Cheesiness,
-		pizza.Flavor,
-		pizza.Sauciness,
-		pizza.Saltiness,
-		pizza.Charness,
-		pizza.ImageId,
+		pizza.ReviewId,
 		pizza.ID,
 	}
 
@@ -145,8 +121,8 @@ func (pm PizzaModel) Delete(id int64) error {
 	}
 
 	query := `
-		DELETE FROM pizzas
-		WHERE id = $1`
+	DELETE FROM pizzas
+	WHERE id = $1`
 
 	result, err := pm.DB.Exec(query, id)
 	if err != nil {
@@ -168,18 +144,11 @@ func (pm PizzaModel) Delete(id int64) error {
 
 func (pm PizzaModel) GetAll() ([]*Pizza, error) {
 	query := `
-		SELECT 
+	SELECT 
 		id,
 		name,
-		style,
-		price,
-		description, 
-		cheesiness, 
-		flavor, 
-		sauciness, 
-		saltiness, 
-		charness
-		FROM pizzas
+		review_id,
+	FROM pizzas
 	` 
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
@@ -202,14 +171,7 @@ func (pm PizzaModel) GetAll() ([]*Pizza, error) {
 		err := rows.Scan(
 			&pizza.ID,
 			&pizza.Name,
-			&pizza.Style,
-			&pizza.Price,
-			&pizza.Description, 
-			&pizza.Cheesiness, 
-			&pizza.Flavor, 
-			&pizza.Sauciness, 
-			&pizza.Saltiness, 
-			&pizza.Charness,
+			&pizza.ReviewId, 
 		)
 
 		if err != nil {
