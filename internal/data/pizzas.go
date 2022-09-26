@@ -1,7 +1,6 @@
 package data
 
 import (
-	"time"
 	"database/sql"
 	"errors"
 	"context"
@@ -15,45 +14,12 @@ import (
 type Pizza struct {
 	ID int64 `json:"id"`
 	Name string `json:"name"`
-	Style string `json:"style"`
-	Price float32 `json:"price"`
-	Description string `json:"description"`
-	Cheesiness float32 `json:"cheesiness"`
-	Flavor float32 `json:"flavor"`
-	Sauciness float32 `json:"sauciness"`
-	Saltiness float32 `json:"saltiness"`
-	Charness float32 `json:"charness"`
-	CreatedAt time.Time `json:"created_at"`
-	ImageId int64 `json:"image_id"`
+	ReviewId Review `json:"review_id"`
 }
 
 func ValidatePizza(v *validator.Validator, pizza *Pizza) {
 	v.Check(pizza.Name != "", "name", "must be provided")
 	v.Check(len(pizza.Name) < 500, "name", "must not be more than 500 bytes long")
-
-	v.Check(pizza.Style != "", "style", "must be provided")
-	v.Check(len(pizza.Style) < 500, "style", "must not be more than 500 bytes long")
-
-	v.Check(pizza.Price >= 0, "price", "must be above 0")
-	v.Check(pizza.Price <= 500, "style", "must below 500")
-
-	v.Check(pizza.Description != "", "description", "must be provided")
-	v.Check(len(pizza.Description) < 500, "description", "must not be more than 500 bytes long")
-
-	v.Check(pizza.Cheesiness >= 0, "cheesiness", "must be greater than or equal to 0")
-	v.Check(pizza.Cheesiness <= 5, "cheesiness", "must be less than or equal to 5")
-
-	v.Check(pizza.Flavor >= 0, "flavor", "must be greater than or equal to 0")
-	v.Check(pizza.Flavor <= 5, "flavor", "must be less than or equal to 5")
-
-	v.Check(pizza.Sauciness >= 0, "sauciness", "must be greater than or equal to 0")
-	v.Check(pizza.Sauciness <= 5, "sauciness", "must be less than or equal to 5")
-
-	v.Check(pizza.Saltiness >= 0, "saltiness", "must be greater than or equal to 0")
-	v.Check(pizza.Saltiness <= 5, "saltiness", "must be less than or equal to 5")
-
-	v.Check(pizza.Charness >= 0, "charness", "must be greater than or equal to 0")
-	v.Check(pizza.Charness <= 5, "charness", "must be less than or equal to 5")
 }
 
 // wrapper around db connection pool
@@ -65,23 +31,14 @@ func (pm PizzaModel) Insert(pizza *Pizza) error {
 	query := `
 	INSERT INTO pizzas (
 		name, 
-		style,
-		price, 
-		description, 
-		cheesiness, 
-		flavor, 
-		sauciness, 
-		saltiness, 
-		charness,
-		image_id
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		review_id
+	) VALUES ($1, $2)
 	RETURNING id
 	`
 	// args slices containing values for the placeholder parameters from the pizza struct
 	args := []interface{}{
-		pizza.Name, pizza.Style, pizza.Price, pizza.Description, pizza.Cheesiness, 
-		pizza.Flavor, pizza.Sauciness, pizza.Saltiness, pizza.Charness,
-		pizza.ImageId,
+		pizza.Name, 
+		pizza.ReviewId,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
@@ -97,18 +54,10 @@ func (pm PizzaModel) Get(id int64) (*Pizza, error) {
 	}
 
 	query := `
-		SELECT id, 
+	SELECT id, 
 		name,
-		style,
-		price,
-		description, 
-		cheesiness, 
-		flavor, 
-		sauciness, 
-		saltiness, 
-		charness,
-		image_id
-		FROM pizzas WHERE id = $1
+		review_id
+	FROM pizzas WHERE id = $1
 	`
 
 	var pizza Pizza
