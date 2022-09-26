@@ -14,16 +14,8 @@ import (
 
 func (app *application) createPizzaHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name 				string 	`json:"name"`
-		Style 				string 	`json:"style"`
-		Price 				float32 `json:"price"`
-		Description 		string 	`json:"description"`
-		Cheesiness 			float32 `json:"cheesiness"`
-		Flavor 				float32 `json:"flavor"`
-		Sauciness 			float32 `json:"sauciness"`
-		Saltiness 			float32 `json:"saltiness"`
-		Charness 			float32 `json:"charness"`
-		ImageId				int64 	`json:"image_id"`
+		Name 		string 	`json:"name"`
+		ReviewId	int64 	`json:"review_id"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -34,15 +26,7 @@ func (app *application) createPizzaHandler(w http.ResponseWriter, r *http.Reques
 
 	pizza := &data.Pizza{
 		Name: 				input.Name,
-		Style: 				input.Style,
-		Price: 				input.Price,
-		Description: 		input.Description,
-		Cheesiness: 		input.Cheesiness,
-		Flavor: 			input.Flavor,
-		Sauciness: 			input.Sauciness,
-		Saltiness: 			input.Saltiness,
-		Charness: 			input.Charness,
-		ImageId:			input.ImageId,
+		ReviewId:			input.ReviewId,
 	}
 
 	v := validator.New()
@@ -119,15 +103,7 @@ func (app *application) updatePizzaHandler(w http.ResponseWriter, r *http.Reques
 
 	var input struct {
 		Name 				*string 	`json:"name"`
-		Style 				*string 	`json:"style"`
-		Price  				*float32 	`json:"price"`
-		Description 		*string 	`json:"description"`
-		Cheesiness 			*float32 	`json:"cheesiness"`
-		Flavor 				*float32 	`json:"flavor"`
-		Sauciness 			*float32 	`json:"sauciness"`
-		Saltiness 			*float32 	`json:"saltiness"`
-		Charness 			*float32 	`json:"charness"`
-		ImageId				*int64 	 	`json:image_id`
+		ReviewId			*int64 	 	`json:review_id`
 
 	}
 
@@ -141,42 +117,9 @@ func (app *application) updatePizzaHandler(w http.ResponseWriter, r *http.Reques
 		pizza.Name = *input.Name
 	}
 
-	if input.Style != nil {
-		pizza.Style = *input.Style
-	}
-
-	if input.Price != nil {
-		pizza.Price = *input.Price
-	}
-
-	if input.Description != nil {
-		pizza.Description = *input.Description
-	}
-
-	if input.Cheesiness != nil {
-		pizza.Cheesiness = *input.Cheesiness
-	} 
-
-	if input.Flavor != nil {
-		pizza.Flavor = *input.Flavor
-	} 	
-
-	if input.Sauciness != nil {
-		pizza.Sauciness = *input.Sauciness
-	}
-
-	if input.Saltiness != nil {
-		pizza.Saltiness = *input.Saltiness
-	}
-
-	if input.Charness != nil {
-		pizza.Charness = *input.Charness
-	} 
-
-	if input.ImageId != nil {
-		pizza.ImageId = *input.ImageId
+	if input.ReviewId != nil {
+		pizza.ReviewId = *input.ReviewId
 	}	
-
 
 	v := validator.New()
 
