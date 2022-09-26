@@ -63,7 +63,7 @@ func main() {
 	//connectionString := "host=%s user=%s dbname=%s sslmode=%s"
 	//connectionString = fmt.Sprintf(connectionString, os.Getenv("HOSTNAME"), os.Getenv("PSQL_USER"), os.Getenv("PSQL_DATABASE"), "disable")
 
-	flag.StringVar(&cfg.db.dataSource, "db-dataSource", os.Getenv("PIZZA_DB_DSN"), "PostgreSQL DSN")
+	flag.StringVar(&cfg.db.dataSource, "db-ds", os.Getenv("PIZZA_DB_DSN"), "PostgreSQL DSN")
 
 	// limit of open connections
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
