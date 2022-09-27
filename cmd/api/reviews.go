@@ -22,6 +22,7 @@ func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Reque
 		Sauciness 			float32 `json:"sauciness"`
 		Saltiness 			float32 `json:"saltiness"`
 		Charness 			float32 `json:"charness"`
+		Conclusion 			string 	`json:"conclusion"`
 		ImageId				int64 	`json:"image_id"`
 	}
 
@@ -40,6 +41,7 @@ func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Reque
 		Sauciness: 			input.Sauciness,
 		Saltiness: 			input.Saltiness,
 		Charness: 			input.Charness,
+		Conclusion:   		input.Conclusion,
 		ImageId:			input.ImageId,
 	}
 
@@ -124,6 +126,7 @@ func (app *application) updateReviewHandler(w http.ResponseWriter, r *http.Reque
 		Sauciness 			*float32 	`json:"sauciness"`
 		Saltiness 			*float32 	`json:"saltiness"`
 		Charness 			*float32 	`json:"charness"`
+		Conclusion 			*string 	`json:"conclusion"`
 		ImageId				*int64 	 	`json:image_id`
 	}
 
@@ -163,6 +166,10 @@ func (app *application) updateReviewHandler(w http.ResponseWriter, r *http.Reque
 
 	if input.Charness != nil {
 		review.Charness = *input.Charness
+	} 
+
+	if input.Conclusion != nil {
+		review.Conclusion = *input.Conclusion
 	} 
 
 	if input.ImageId != nil {
