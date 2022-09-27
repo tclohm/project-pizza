@@ -164,7 +164,7 @@ func (rm ReviewModel) Update(review *Review) error {
 		sauciness = $6, 
 		saltiness = $7, 
 		charness = $8,
-		conclusion = $9
+		conclusion = $9,
 		image_id = $10,
 	WHERE id = $11
 	RETURNING id
