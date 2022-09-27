@@ -170,11 +170,11 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 
 	venue_query := `
 	select
-	venues.id as venue_id,
-	venues.name as venue_name,
-	venues.lat,
-	venues.lon,
-	venues.address as venue_address
+		venues.id as venue_id,
+		venues.name as venue_name,
+		venues.lat,
+		venues.lon,
+		venues.address as venue_address
 	FROM venues 
 	JOIN venuepizzas
 	ON venues.id = venuepizzas.venue_id
