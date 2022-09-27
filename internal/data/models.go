@@ -11,12 +11,11 @@ var (
 )
 
 type Models struct {
-	Reviews interface{
+	Reviews interface {
 		Insert(review *Review) error
 		Get(id int64) (*Review, error)
 		Update(review *Review) error
 		Delete(id int64) error
-		GetAll() ([]*Review, error)
 	}
 	Pizzas interface {
 		Insert(pizza *Pizza) error
@@ -50,7 +49,7 @@ type Models struct {
 
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Review: ReviewModel{DB: db},
+		Reviews: ReviewModel{DB: db},
 		Pizzas: PizzaModel{DB: db},
 		Images: ImageModel{DB: db},
 		Venues: VenueModel{DB: db},
@@ -60,7 +59,7 @@ func NewModels(db *sql.DB) Models {
 
 func NewMockModels() Models {
 	return Models{
-		Review: MockReviewModel{},
+		Reviews: MockReviewModel{},
 		Pizzas: MockPizzaModel{},
 		Images: MockImageModel{},
 		Venues: MockVenueModel{},

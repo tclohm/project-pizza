@@ -1,6 +1,7 @@
 package data
 
 import (
+	"time"
 	"database/sql"
 	"errors"
 	"context"
@@ -14,7 +15,7 @@ import (
 type Pizza struct {
 	ID int64 `json:"id"`
 	Name string `json:"name"`
-	ReviewId Review `json:"review_id"`
+	ReviewId int64 `json:"review_id"`
 }
 
 func ValidatePizza(v *validator.Validator, pizza *Pizza) {

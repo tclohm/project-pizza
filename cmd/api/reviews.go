@@ -45,21 +45,21 @@ func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Reque
 
 	v := validator.New()
 
-	if data.ValidateReview(v, Review); !v.Valid() {
+	if data.ValidateReview(v, review); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	err = app.models.Reviews.Insert(Review)
+	err = app.models.Reviews.Insert(review)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
 	headers := make(http.Header)
-	headers.Set("Location", fmt.Sprintf("/v1/Reviews/%d", Review.ID))
+	headers.Set("Location", fmt.Sprintf("/v1/Reviews/%d", review.ID))
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"Review": Review}, headers)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"review": review}, headers)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -131,10 +131,6 @@ func (app *application) updateReviewHandler(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
-	}
-
-	if input.Name != nil {
-		review.Name = *input.Name
 	}
 
 	if input.Style != nil {
@@ -220,20 +216,6 @@ func (app *application) deleteReviewHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"message": "Review successfully deleted"}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
-
-func (app *application) listReviewsHandler(w http.ResponseWriter, r *http.Request) {
-
-	Reviews, err := app.models.Reviews.GetAll()
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-
-	err = app.writeJSON(w, http.StatusOK, envelope{"Reviews": Reviews}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
