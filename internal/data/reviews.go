@@ -17,7 +17,6 @@ type Review struct {
 	ID 			int64 		`json:"id"`
 	Style 		string 		`json:"style"`
 	Price 		float32 	`json:"price"`
-	Description string 		`json:"description"`
 	Cheesiness 	float32 	`json:"cheesiness"`
 	Flavor 		float32 	`json:"flavor"`
 	Sauciness 	float32 	`json:"sauciness"`
@@ -36,9 +35,6 @@ func ValidateReview(v *validator.Validator, review *Review) {
 	v.Check(review.Price >= 0, "price", "must be above 0")
 	v.Check(review.Price <= 500, "style", "must below 500")
 
-	v.Check(review.Description != "", "description", "must be provided")
-	v.Check(len(review.Description) < 500, "description", "must not be more than 500 bytes long")
-
 	v.Check(review.Cheesiness >= 0, "cheesiness", "must be greater than or equal to 0")
 	v.Check(review.Cheesiness <= 5, "cheesiness", "must be less than or equal to 5")
 
@@ -56,7 +52,7 @@ func ValidateReview(v *validator.Validator, review *Review) {
 
 	v.Check(review.Conclusion != "", "conclusion", "must be provided")
 	v.Check(len(review.Conclusion) < 500, "conclusion", "must not be more than 500 bytes long")
-	v.Check(validator.In(review.Conclusion, "RECOMMENDED", "SATISFIED", "CONTENT", "DISSATISFIED", "STAY AWAY"))
+	v.Check(validator.In(review.Conclusion, "RECOMMENDED", "SATISFIED", "CONTENT", "DISSATISFIED", "STAY AWAY"), "conclusion", "must be the provided options")
 }
 
 type ReviewModel struct {
@@ -67,8 +63,7 @@ func (rm ReviewModel) Insert(review *Review) error {
 	query := `
 	INSERT INTO reviews (
 		style,
-		price, 
-		description, 
+		price,
 		cheesiness, 
 		flavor, 
 		sauciness, 
@@ -83,7 +78,6 @@ func (rm ReviewModel) Insert(review *Review) error {
 	args := []interface{}{
 		review.Style, 
 		review.Price, 
-		review.Description, 
 		review.Cheesiness, 
 		review.Flavor, 
 		review.Sauciness, 
@@ -109,7 +103,6 @@ func (rm ReviewModel) Get(id int64) (*Review, error) {
 	SELECT id,
 		style,
 		price,
-		description,
 		cheesiness,
 		flavor,
 		sauciness,
@@ -131,7 +124,6 @@ func (rm ReviewModel) Get(id int64) (*Review, error) {
 		&review.ID,
 		&review.Style,
 		&review.Price,
-		&review.Description,
 		&review.Cheesiness,
 		&review.Flavor,
 		&review.Sauciness,
@@ -159,22 +151,20 @@ func (rm ReviewModel) Update(review *Review) error {
 		SET
 		style = $1,
 		price = $2
-		description = $3, 
-		cheesiness = $4, 
-		flavor = $5, 
-		sauciness = $6, 
-		saltiness = $7, 
-		charness = $8,
-		conclusion = $9,
-		image_id = $10,
-	WHERE id = $11
+		cheesiness = $3, 
+		flavor = $4, 
+		sauciness = $5, 
+		saltiness = $6, 
+		charness = $7,
+		conclusion = $8,
+		image_id = $9,
+	WHERE id = $10
 	RETURNING id
 	`
 
 	args := []interface{}{
 		review.Style,
 		review.Price,
-		review.Description,
 		review.Cheesiness,
 		review.Flavor,
 		review.Sauciness,

@@ -16,7 +16,6 @@ func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Reque
 	var input struct {
 		Style 				string 	`json:"style"`
 		Price 				float32 `json:"price"`
-		Description 		string 	`json:"description"`
 		Cheesiness 			float32 `json:"cheesiness"`
 		Flavor 				float32 `json:"flavor"`
 		Sauciness 			float32 `json:"sauciness"`
@@ -35,7 +34,6 @@ func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Reque
 	review := &data.Review{
 		Style: 				input.Style,
 		Price: 				input.Price,
-		Description: 		input.Description,
 		Cheesiness: 		input.Cheesiness,
 		Flavor: 			input.Flavor,
 		Sauciness: 			input.Sauciness,
@@ -120,7 +118,6 @@ func (app *application) updateReviewHandler(w http.ResponseWriter, r *http.Reque
 	var input struct {
 		Style 				*string 	`json:"style"`
 		Price  				*float32 	`json:"price"`
-		Description 		*string 	`json:"description"`
 		Cheesiness 			*float32 	`json:"cheesiness"`
 		Flavor 				*float32 	`json:"flavor"`
 		Sauciness 			*float32 	`json:"sauciness"`
@@ -142,10 +139,6 @@ func (app *application) updateReviewHandler(w http.ResponseWriter, r *http.Reque
 
 	if input.Price != nil {
 		review.Price = *input.Price
-	}
-
-	if input.Description != nil {
-		review.Description = *input.Description
 	}
 
 	if input.Cheesiness != nil {
