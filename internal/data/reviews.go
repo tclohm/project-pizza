@@ -56,6 +56,7 @@ func ValidateReview(v *validator.Validator, review *Review) {
 
 	v.Check(review.Conclusion != "", "conclusion", "must be provided")
 	v.Check(len(review.Conclusion) < 500, "conclusion", "must not be more than 500 bytes long")
+	v.Check(validator.In(review.Conclusion, "RECOMMENDED", "SATISFIED", "CONTENT", "DISSATISFIED", "STAY AWAY"))
 }
 
 type ReviewModel struct {
