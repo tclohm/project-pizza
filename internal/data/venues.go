@@ -32,16 +32,17 @@ type VenueModel struct {
 
 func (vm VenueModel) Insert(venue *Venue) error {
 
-	query := `SELECT id FROM venues WHERE name = $1`
+	query := `SELECT id FROM venues WHERE name = $1 AND address = $2`
 
 	args := []interface{}{
 		venue.Name,
+		venue.Address,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
 	defer cancel()
 
-	exist := vm.DB.QueryRowContext(ctx, query, args...).Scan(&venue.Address)
+	exist := vm.DB.QueryRowContext(ctx, query, args...).Scan(&venue.ID)
 
 	if exist != nil && errors.Is(exist, sql.ErrNoRows) {
 

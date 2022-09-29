@@ -34,7 +34,8 @@ type Opinion struct {
 	Sauciness 			float32 	`json:"sauciness"`
 	Saltiness  			float32 	`json:"saltiness"`
 	Charness 			float32 	`json:"charness"`
-	Spiciness 			float32		`json:"spicincess"`
+	Spiciness 			float32		`json:"spiciness"`
+	Conclusion 			string 		`json:"conclusion"`
 	PizzaImageFilename 	string 		`json:"pizza_image_filename"`
 	PizzaImageID		int64 		`json:"pizza_image_id"`
 	PizzaLocation		string 		`json:"pizza_image_location"`
@@ -284,6 +285,7 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 				reviews.saltiness,
 				reviews.charness,
 				reviews.spiciness,
+				reviews.conclusion,
 				images.filename as pizza_image_filename,
 				images.id as pizza_image_id,
 				images.location as pizza_image_location,
@@ -323,7 +325,8 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 					&opinion.Sauciness, 			
 					&opinion.Saltiness,  			
 					&opinion.Charness, 			
-					&opinion.Spiciness, 			
+					&opinion.Spiciness,
+					&opinion.Conclusion,			
 					&opinion.PizzaImageFilename, 	
 					&opinion.PizzaImageID,		
 					&opinion.PizzaLocation,	
@@ -334,7 +337,7 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 					return nil, err
 				}
 
-				if opinion.PizzaId == pizzaReviewed.PizzaId {
+				if opinion.PizzaId == pizzaReviewed.PizzaId && opinion.VenueId == pizzaReviewed.VenueId {
 					opinions = append(opinions, &opinion)
 				}
 

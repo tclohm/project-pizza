@@ -29,24 +29,41 @@ type PizzaModel struct {
 }
 
 func (pm PizzaModel) Insert(pizza *Pizza) error {
-	query := `
-	INSERT INTO pizzas (
-		name, 
-		review_id
-	) VALUES ($1, $2)
-	RETURNING id
-	`
-	// args slices containing values for the placeholder parameters from the pizza struct
+	// MARK: -- I need to check the venue name and the pizza name
+	query := `SELECT id FROM pizzas WHERE name = $1`
+
 	args := []interface{}{
-		pizza.Name, 
-		pizza.ReviewId,
+		pizza.Name,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
 	defer cancel()
 
-	// passing in the slice and scanning the system generated id
-	return pm.DB.QueryRowContext(ctx, query, args...).Scan(&pizza.ID)
+	exist := pm.DB.QueryRowContext(ctx, query, args...).Scan(&pizza.ID)
+
+	if exist != nil && errors.Is(exist, sql.ErrNoRows) {
+		query := `
+		INSERT INTO pizzas (
+			name, 
+			review_id
+		) VALUES ($1, $2)
+		RETURNING id
+		`
+		// args slices containing values for the placeholder parameters from the pizza struct
+		args := []interface{}{
+			pizza.Name, 
+			pizza.ReviewId,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+		defer cancel()
+
+		// passing in the slice and scanning the system generated id
+		return pm.DB.QueryRowContext(ctx, query, args...).Scan(&pizza.ID)
+	}
+
+	return exist
+
 }
 
 func (pm PizzaModel) Get(id int64) (*Pizza, error) {
