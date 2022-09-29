@@ -1,0 +1,4 @@
+ALTER TABLE reviews
+ADD COLUMN image_id int;
+
+ALTER TABLE reviews ADD CONSTRAINT image_fk FOREIGN KEY (image_id) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE;
