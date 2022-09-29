@@ -23,6 +23,7 @@ type Review struct {
 	Saltiness 	float32 	`json:"saltiness"`
 	Charness 	float32 	`json:"charness"`
 	Conclusion 	string 		`json:"conclusion"`
+	Spiciness 	float32 	`json:"spiciness"`
 	CreatedAt 	time.Time 	`json:"created_at"`
 	ImageId 	int64 		`json:"image_id"`
 }
@@ -50,6 +51,9 @@ func ValidateReview(v *validator.Validator, review *Review) {
 	v.Check(review.Charness >= 0, "charness", "must be greater than or equal to 0")
 	v.Check(review.Charness <= 5, "charness", "must be less than or equal to 5")
 
+	v.Check(review.Spiciness >= 0, "spiciness", "must be greater than or equal to 0")
+	v.Check(review.Spiciness <= 5, "spiciness", "must be less than or equal to 5")
+
 	v.Check(review.Conclusion != "", "conclusion", "must be provided")
 	v.Check(len(review.Conclusion) < 500, "conclusion", "must not be more than 500 bytes long")
 	v.Check(validator.In(review.Conclusion, "RECOMMENDED", "SATISFIED", "CONTENT", "DISSATISFIED", "STAY AWAY"), "conclusion", "must be the provided options")
@@ -69,8 +73,9 @@ func (rm ReviewModel) Insert(review *Review) error {
 		sauciness, 
 		saltiness, 
 		charness,
+		spiciness,
 		conclusion,
-		image_id,
+		image_id
 	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	RETURNING id
 	`
@@ -83,6 +88,7 @@ func (rm ReviewModel) Insert(review *Review) error {
 		review.Sauciness, 
 		review.Saltiness, 
 		review.Charness,
+		review.Spiciness,
 		review.Conclusion,
 		review.ImageId,
 	}
@@ -108,6 +114,7 @@ func (rm ReviewModel) Get(id int64) (*Review, error) {
 		sauciness,
 		saltiness,
 		charness,
+		spiciness,
 		conclusion,
 		image_id
 	FROM reviews WHERE id = $1
@@ -129,6 +136,7 @@ func (rm ReviewModel) Get(id int64) (*Review, error) {
 		&review.Sauciness,
 		&review.Saltiness,
 		&review.Charness,
+		&review.Spiciness,
 		&review.Conclusion,
 		&review.ImageId,
 	)
@@ -156,9 +164,10 @@ func (rm ReviewModel) Update(review *Review) error {
 		sauciness = $5, 
 		saltiness = $6, 
 		charness = $7,
-		conclusion = $8,
-		image_id = $9,
-	WHERE id = $10
+		spiciness = $8,
+		conclusion = $9,
+		image_id = $10,
+	WHERE id = $11
 	RETURNING id
 	`
 
@@ -170,6 +179,7 @@ func (rm ReviewModel) Update(review *Review) error {
 		review.Sauciness,
 		review.Saltiness,
 		review.Charness,
+		review.Spiciness,
 		review.Conclusion,
 		review.ImageId,
 		review.ID,
