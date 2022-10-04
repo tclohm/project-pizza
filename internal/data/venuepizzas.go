@@ -19,7 +19,6 @@ type VenuePizza struct {
 
 type PizzaReviewed struct {
 	VenueId 			int64 		`json:"venue_id"`
-	PizzaId 			int64 		`json:"pizza_id"`
 	PizzaName 			string 		`json:"pizza_name"`
 	Opinions 			[]*Opinion 	`json:"opinions"`
 }
@@ -27,6 +26,7 @@ type PizzaReviewed struct {
 type Opinion struct {
 	VenueId 			int64 		`json:"venue_id"`
 	PizzaId 			int64 		`json:"pizza_id"`
+	PizzaName 			string 		`json:"pizza_name"`
 	PizzaStyle 			string 		`json:"pizza_style"`
 	PizzaPrice			float32 	`json:"price"`
 	Cheesiness 			float32 	`json:"cheesiness"`
@@ -232,15 +232,13 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 
 		// type PizzaReviewed struct {
 			// VenueId 			int64 		`json:"venue_id"`
-			// PizzaId 			int64 		`json:"pizza_id"`
 			// PizzaName 		string 		`json:"pizza_name"`
 			// Opinions 		[]*Opinion 	`json:"opinions"`
 		// }
 
 		pizza_reviewed_for_venue_query := `
 		SELECT
-			venuepizzas.venue_id,
-			venuepizzas.pizza_id,
+			DISTINCT venuepizzas.venue_id,
 			pizzas.name as pizza_name
 			FROM venuepizzas
 			JOIN pizzas
@@ -263,7 +261,6 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 
 			err := pizza_rows.Scan(
 				&pizzaReviewed.VenueId,
-				&pizzaReviewed.PizzaId,
 				&pizzaReviewed.PizzaName,
 			)
 
@@ -277,6 +274,7 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 			select 
 				venues.id as venue_id,
 				pizzas.id as pizza_id,
+				pizzas.name as pizza_name, 
 				reviews.style as pizza_style,
 				reviews.price,
 				reviews.cheesiness,
@@ -318,6 +316,7 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 				err := opinion_rows.Scan(
 					&opinion.VenueId,
 					&opinion.PizzaId,
+					&opinion.PizzaName,
 					&opinion.PizzaStyle, 
 					&opinion.PizzaPrice,			
 					&opinion.Cheesiness, 			
@@ -337,7 +336,7 @@ func (vpm VenuePizzaModel) GetAll() ([]*VenuePizzaMixin, error) {
 					return nil, err
 				}
 
-				if opinion.PizzaId == pizzaReviewed.PizzaId && opinion.VenueId == pizzaReviewed.VenueId {
+				if opinion.VenueId == pizzaReviewed.VenueId && opinion.PizzaName == pizzaReviewed.PizzaName {
 					opinions = append(opinions, &opinion)
 				}
 
