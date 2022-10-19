@@ -227,3 +227,17 @@ func (app *application) deleteReviewHandler(w http.ResponseWriter, r *http.Reque
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) listReviewsHandler(w http.ResponseWriter, r *http.Request) {
+	reviews, err := app.models.Reviews.GetAll()
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"reviews": reviews}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

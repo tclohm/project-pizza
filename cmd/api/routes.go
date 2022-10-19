@@ -14,6 +14,7 @@ func (app *application) routes() http.Handler {
 	sub.HandleFunc("/images/{id:[0-9]+}", app.showImageHandler).Methods("GET")
 	sub.HandleFunc("/venues", app.createVenueHandler).Methods("POST")
 	sub.HandleFunc("/reviews", app.createReviewHandler).Methods("POST")
+	sub.HandleFunc("/reviews", app.listReviewsHandler).Methods("GET")
 	sub.HandleFunc("/pizzas", app.listPizzasHandler).Methods("GET")
 	sub.HandleFunc("/pizzas", app.createPizzaHandler).Methods("POST")
 	sub.HandleFunc("/pizzas/{id:[0-9]+}", app.showPizzaHandler).Methods("GET")

@@ -16,6 +16,7 @@ type Models struct {
 		Get(id int64) (*Review, error)
 		Update(review *Review) error
 		Delete(id int64) error
+		GetAll() ([]*Review, error)
 	}
 	Pizzas interface {
 		Insert(pizza *Pizza) error

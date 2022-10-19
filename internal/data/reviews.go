@@ -228,6 +228,70 @@ func (rm ReviewModel) Delete(id int64) error {
 	return nil
 }
 
+func (rm ReviewModel) GetAll() ([]*Review, error) {
+	query := `
+		SELECT
+			id, 
+			style,
+			price,
+			cheesiness, 
+			flavor, 
+			sauciness, 
+			saltiness, 
+			charness,
+			spiciness,
+			conclusion,
+			image_id,
+			created_at
+		FROM reviews`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	defer cancel()
+
+	args := []interface{}{}
+
+	rows, err := rm.DB.QueryContext(ctx, query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	reviews := []*Review{}
+
+	for rows.Next() {
+		var review Review
+
+		err := rows.Scan(
+			&review.ID,
+			&review.Style,
+			&review.Price,
+			&review.Cheesiness,
+			&review.Flavor,
+			&review.Sauciness,
+			&review.Saltiness,
+			&review.Charness,
+			&review.Spiciness,
+			&review.Conclusion,
+			&review.ImageId,
+			&review.CreatedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		reviews = append(reviews, &review)
+
+		if err = rows.Err(); err != nil {
+			return nil, err
+		}
+	}
+
+	return reviews, nil
+}
+
 
 type MockReviewModel struct {}
 
@@ -245,4 +309,8 @@ func (rm MockReviewModel) Update(review *Review) error {
 
 func (rm MockReviewModel) Delete(id int64) error {
 	return nil
+}
+
+func (rm MockReviewModel) GetAll() ([]*Review, error) {
+	return nil, nil
 }
