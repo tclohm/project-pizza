@@ -69,15 +69,17 @@ func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Reque
 
 func (app *application) showReviewHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id := vars["id"]
+	datastring := vars["datastring"]
 
-	n, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
+	// n, err := strconv.ParseInt(id, 10, 64)
+	// if err != nil {
+	// 	app.notFoundResponse(w, r)
+	// 	return
+	// }
 
-	review, err := app.models.Reviews.Get(n)
+	fmt.Println("datastring", datastring)
+
+	review, err := app.models.Reviews.Get(datastring)
 
 	if err != nil {
 		switch {
@@ -96,110 +98,110 @@ func (app *application) showReviewHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func (app *application) updateReviewHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+// func (app *application) updateReviewHandler(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
+// 	id := vars["id"]
 
-	n, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
+// 	n, err := strconv.ParseInt(id, 10, 64)
+// 	if err != nil {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
 
-	review, err := app.models.Reviews.Get(n)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
+// 	review, err := app.models.Reviews.Get(n)
+// 	if err != nil {
+// 		switch {
+// 		case errors.Is(err, data.ErrRecordNotFound):
+// 			app.notFoundResponse(w, r)
+// 		default:
+// 			app.serverErrorResponse(w, r, err)
+// 		}
+// 		return
+// 	}
 
-	var input struct {
-		Style 				*string 	`json:"style"`
-		Price  				*float32 	`json:"price"`
-		Cheesiness 			*float32 	`json:"cheesiness"`
-		Flavor 				*float32 	`json:"flavor"`
-		Sauciness 			*float32 	`json:"sauciness"`
-		Saltiness 			*float32 	`json:"saltiness"`
-		Charness 			*float32 	`json:"charness"`
-		Spiciness 			*float32 	`json:"spiciness"`
-		Conclusion 			*string 	`json:"conclusion"`
-		ImageId				*int64 	 	`json:image_id`
-	}
+// 	var input struct {
+// 		Style 				*string 	`json:"style"`
+// 		Price  				*float32 	`json:"price"`
+// 		Cheesiness 			*float32 	`json:"cheesiness"`
+// 		Flavor 				*float32 	`json:"flavor"`
+// 		Sauciness 			*float32 	`json:"sauciness"`
+// 		Saltiness 			*float32 	`json:"saltiness"`
+// 		Charness 			*float32 	`json:"charness"`
+// 		Spiciness 			*float32 	`json:"spiciness"`
+// 		Conclusion 			*string 	`json:"conclusion"`
+// 		ImageId				*int64 	 	`json:image_id`
+// 	}
 
-	err = app.readJSON(w, r, &input)
-	if err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
+// 	err = app.readJSON(w, r, &input)
+// 	if err != nil {
+// 		app.badRequestResponse(w, r, err)
+// 		return
+// 	}
 
-	if input.Style != nil {
-		review.Style = *input.Style
-	}
+// 	if input.Style != nil {
+// 		review.Style = *input.Style
+// 	}
 
-	if input.Price != nil {
-		review.Price = *input.Price
-	}
+// 	if input.Price != nil {
+// 		review.Price = *input.Price
+// 	}
 
-	if input.Cheesiness != nil {
-		review.Cheesiness = *input.Cheesiness
-	} 
+// 	if input.Cheesiness != nil {
+// 		review.Cheesiness = *input.Cheesiness
+// 	} 
 
-	if input.Flavor != nil {
-		review.Flavor = *input.Flavor
-	} 	
+// 	if input.Flavor != nil {
+// 		review.Flavor = *input.Flavor
+// 	} 	
 
-	if input.Sauciness != nil {
-		review.Sauciness = *input.Sauciness
-	}
+// 	if input.Sauciness != nil {
+// 		review.Sauciness = *input.Sauciness
+// 	}
 
-	if input.Saltiness != nil {
-		review.Saltiness = *input.Saltiness
-	}
+// 	if input.Saltiness != nil {
+// 		review.Saltiness = *input.Saltiness
+// 	}
 
-	if input.Charness != nil {
-		review.Charness = *input.Charness
-	} 
+// 	if input.Charness != nil {
+// 		review.Charness = *input.Charness
+// 	} 
 
-	if input.Spiciness != nil {
-		review.Spiciness = *input.Spiciness
-	} 
+// 	if input.Spiciness != nil {
+// 		review.Spiciness = *input.Spiciness
+// 	} 
 
-	if input.Conclusion != nil {
-		review.Conclusion = *input.Conclusion
-	} 
+// 	if input.Conclusion != nil {
+// 		review.Conclusion = *input.Conclusion
+// 	} 
 
-	if input.ImageId != nil {
-		review.ImageId = *input.ImageId
-	}	
+// 	if input.ImageId != nil {
+// 		review.ImageId = *input.ImageId
+// 	}	
 
 
-	v := validator.New()
+// 	v := validator.New()
 
-	if data.ValidateReview(v, review); !v.Valid() {
-		app.failedValidationResponse(w, r, v.Errors)
-		return
-	}
+// 	if data.ValidateReview(v, review); !v.Valid() {
+// 		app.failedValidationResponse(w, r, v.Errors)
+// 		return
+// 	}
 
-	err = app.models.Reviews.Update(review)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrEditConflict):
-			app.editConflictResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
+// 	err = app.models.Reviews.Update(review)
+// 	if err != nil {
+// 		switch {
+// 		case errors.Is(err, data.ErrEditConflict):
+// 			app.editConflictResponse(w, r)
+// 		default:
+// 			app.serverErrorResponse(w, r, err)
+// 		}
+// 		return
+// 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"review": review}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}	
-}
+// 	err = app.writeJSON(w, http.StatusOK, envelope{"review": review}, nil)
+// 	if err != nil {
+// 		app.serverErrorResponse(w, r, err)
+// 	}	
+// }
 
 func (app *application) deleteReviewHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

@@ -100,9 +100,23 @@ func (rm ReviewModel) Insert(review *Review) error {
 	return rm.DB.QueryRowContext(ctx, query, args...).Scan(&review.ID)
 }
 
-func (rm ReviewModel) Get(id int64) (*Review, error) {
-	if id < 1 {
+func (rm ReviewModel) Get(datestring string) (*Review, error) {
+	date, err := time.Parse(time.RFC3339, datestring)
+	if err != nil {
+		return nil, err
+	}
+
+	if date.After(time.Date(2022, 10, 21, 0, 0, 0, 0, time.UTC)) {
 		return nil, ErrRecordNotFound
+	}
+
+	year, month, day := date.Date()
+
+	endOfDay := time.Date(year, month, day, 23, 59, 59, 0, time.UTC)
+
+	args := []interface{}{
+		date,
+		endOfDay,
 	}
 
 	query := `
@@ -117,7 +131,7 @@ func (rm ReviewModel) Get(id int64) (*Review, error) {
 		spiciness,
 		conclusion,
 		image_id
-	FROM reviews WHERE id = $1
+	FROM reviews WHERE created_at BETWEEN $1 and $2
 	`
 
 	var review Review
@@ -127,7 +141,7 @@ func (rm ReviewModel) Get(id int64) (*Review, error) {
 	// memory leak avoided
 	defer cancel()
 
-	err := rm.DB.QueryRowContext(ctx, query, id).Scan(
+	err = rm.DB.QueryRowContext(ctx, query, args...).Scan(
 		&review.ID,
 		&review.Style,
 		&review.Price,
@@ -299,7 +313,7 @@ func (rm MockReviewModel) Insert(review *Review) error {
 	return nil
 }
 
-func (rm MockReviewModel) Get(id int64) (*Review, error) {
+func (rm MockReviewModel) Get(datestring string) (*Review, error) {
 	return nil, nil
 }
 
