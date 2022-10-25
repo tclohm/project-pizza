@@ -69,7 +69,8 @@ func (app *application) createReviewHandler(w http.ResponseWriter, r *http.Reque
 
 func (app *application) showReviewHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	datastring := vars["datastring"]
+	start := vars["start"]
+	end := vars["end"]
 
 	// n, err := strconv.ParseInt(id, 10, 64)
 	// if err != nil {
@@ -77,9 +78,7 @@ func (app *application) showReviewHandler(w http.ResponseWriter, r *http.Request
 	// 	return
 	// }
 
-	fmt.Println("datastring", datastring)
-
-	review, err := app.models.Reviews.Get(datastring)
+	reviews, err := app.models.Reviews.Get(start, end)
 
 	if err != nil {
 		switch {
@@ -92,7 +91,7 @@ func (app *application) showReviewHandler(w http.ResponseWriter, r *http.Request
 	}
 	
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"review": review}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"reviews": reviews}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

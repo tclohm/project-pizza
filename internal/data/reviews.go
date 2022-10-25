@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"context"
-	_ "fmt"
+	"fmt"
 
 	"github.com/tclohm/project-pizza/internal/validator"
 
@@ -100,23 +100,27 @@ func (rm ReviewModel) Insert(review *Review) error {
 	return rm.DB.QueryRowContext(ctx, query, args...).Scan(&review.ID)
 }
 
-func (rm ReviewModel) Get(datestring string) (*Review, error) {
-	date, err := time.Parse(time.RFC3339, datestring)
+func (rm ReviewModel) Get(startDate, endDate string) ([]*Review, error) {
+	start, err := time.Parse(time.RFC3339, startDate)
 	if err != nil {
 		return nil, err
 	}
 
-	if date.After(time.Date(2022, 10, 21, 0, 0, 0, 0, time.UTC)) {
+	end, err := time.Parse(time.RFC3339, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	endYear, endMonth, endDay := end.Date()
+
+	if start.Before(time.Date(2022, 10, 01, 0, 0, 0, 0, time.UTC)) {
+		fmt.Println("error", start)
 		return nil, ErrRecordNotFound
 	}
 
-	year, month, day := date.Date()
-
-	endOfDay := time.Date(year, month, day, 23, 59, 59, 0, time.UTC)
-
-	args := []interface{}{
-		date,
-		endOfDay,
+	if start.After(time.Date(endYear, endMonth, endDay, 0, 0, 0, 0, time.UTC)) {
+		fmt.Println("error start after end", end)
+		return nil, ErrRecordNotFound
 	}
 
 	query := `
@@ -134,37 +138,55 @@ func (rm ReviewModel) Get(datestring string) (*Review, error) {
 	FROM reviews WHERE created_at BETWEEN $1 and $2
 	`
 
-	var review Review
-	// 3-second timeout deadline
+	args := []interface{}{
+		start,
+		end,
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
 	// release resources associated with context before Get() is returned
 	// memory leak avoided
 	defer cancel()
 
-	err = rm.DB.QueryRowContext(ctx, query, args...).Scan(
-		&review.ID,
-		&review.Style,
-		&review.Price,
-		&review.Cheesiness,
-		&review.Flavor,
-		&review.Sauciness,
-		&review.Saltiness,
-		&review.Charness,
-		&review.Spiciness,
-		&review.Conclusion,
-		&review.ImageId,
-	)
+	rows, err := rm.DB.QueryContext(ctx, query, args...)
 
 	if err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
-			return nil, ErrRecordNotFound
-		default:
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	reviews := []*Review{}
+
+	for rows.Next() {
+		var review Review
+
+		err = rows.Scan(
+			&review.ID,
+			&review.Style,
+			&review.Price,
+			&review.Cheesiness,
+			&review.Flavor,
+			&review.Sauciness,
+			&review.Saltiness,
+			&review.Charness,
+			&review.Spiciness,
+			&review.Conclusion,
+			&review.ImageId,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		reviews = append(reviews, &review)
+
+		if err = rows.Err(); err != nil {
 			return nil, err
 		}
 	}
 
-	return &review, nil
+	return reviews, nil
 }
 
 func (rm ReviewModel) Update(review *Review) error {
@@ -313,7 +335,7 @@ func (rm MockReviewModel) Insert(review *Review) error {
 	return nil
 }
 
-func (rm MockReviewModel) Get(datestring string) (*Review, error) {
+func (rm MockReviewModel) Get(startDate, endDate string) ([]*Review, error) {
 	return nil, nil
 }
 
