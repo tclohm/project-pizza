@@ -28,6 +28,24 @@ type Review struct {
 	ImageId 	int64 		`json:"image_id"`
 }
 
+type ReviewWithPizzaName struct {
+	ID 			int64 		`json:"id"`
+	Name 		string		`json:"name"`
+	Style 		string 		`json:"style"`
+	Price 		float32 	`json:"price"`
+	Cheesiness 	float32 	`json:"cheesiness"`
+	Flavor 		float32 	`json:"flavor"`
+	Sauciness 	float32 	`json:"sauciness"`
+	Saltiness 	float32 	`json:"saltiness"`
+	Charness 	float32 	`json:"charness"`
+	Conclusion 	string 		`json:"conclusion"`
+	Spiciness 	float32 	`json:"spiciness"`
+	CreatedAt 	time.Time 	`json:"created_at"`
+	ImageId 	int64 		`json:"image_id"`
+}
+
+
+
 func ValidateReview(v *validator.Validator, review *Review) {
 
 	v.Check(review.Style != "", "style", "must be provided")
@@ -100,7 +118,7 @@ func (rm ReviewModel) Insert(review *Review) error {
 	return rm.DB.QueryRowContext(ctx, query, args...).Scan(&review.ID)
 }
 
-func (rm ReviewModel) Get(startDate, endDate string) ([]*Review, error) {
+func (rm ReviewModel) Get(startDate, endDate string) ([]*ReviewWithPizzaName, error) {
 	start, err := time.Parse(time.RFC3339, startDate)
 	if err != nil {
 		return nil, err
@@ -124,7 +142,9 @@ func (rm ReviewModel) Get(startDate, endDate string) ([]*Review, error) {
 	}
 
 	query := `
-	SELECT id,
+	SELECT 
+		reviews.id,
+		name,
 		style,
 		price,
 		cheesiness,
@@ -135,7 +155,9 @@ func (rm ReviewModel) Get(startDate, endDate string) ([]*Review, error) {
 		spiciness,
 		conclusion,
 		image_id
-	FROM reviews WHERE created_at BETWEEN $1 and $2
+	FROM reviews 
+	JOIN pizzas ON reviews.id = pizzas.review_id
+	WHERE created_at BETWEEN $1 and $2
 	`
 
 	args := []interface{}{
@@ -156,13 +178,14 @@ func (rm ReviewModel) Get(startDate, endDate string) ([]*Review, error) {
 
 	defer rows.Close()
 
-	reviews := []*Review{}
+	reviews := []*ReviewWithPizzaName{}
 
 	for rows.Next() {
-		var review Review
+		var review ReviewWithPizzaName
 
 		err = rows.Scan(
 			&review.ID,
+			&review.Name,
 			&review.Style,
 			&review.Price,
 			&review.Cheesiness,
@@ -193,17 +216,18 @@ func (rm ReviewModel) Update(review *Review) error {
 	query := `
 	UPDATE reviews
 		SET
-		style = $1,
-		price = $2
-		cheesiness = $3, 
-		flavor = $4, 
-		sauciness = $5, 
-		saltiness = $6, 
-		charness = $7,
-		spiciness = $8,
-		conclusion = $9,
-		image_id = $10,
-	WHERE id = $11
+		name = $1,
+		style = $2,
+		price = $3,
+		cheesiness = $4, 
+		flavor = $5, 
+		sauciness = $6, 
+		saltiness = $7, 
+		charness = $8,
+		spiciness = $9,
+		conclusion = $10,
+		image_id = $11,
+	WHERE id = $12
 	RETURNING id
 	`
 
@@ -335,7 +359,7 @@ func (rm MockReviewModel) Insert(review *Review) error {
 	return nil
 }
 
-func (rm MockReviewModel) Get(startDate, endDate string) ([]*Review, error) {
+func (rm MockReviewModel) Get(startDate, endDate string) ([]*ReviewWithPizzaName, error) {
 	return nil, nil
 }
 
