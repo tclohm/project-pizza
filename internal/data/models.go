@@ -13,7 +13,7 @@ var (
 type Models struct {
 	Reviews interface {
 		Insert(review *Review) error
-		Get(startDate, endDate string) ([]*Review, error)
+		Get(startDate, endDate string) ([]*ReviewWithPizzaName, error)
 		Update(review *Review) error
 		Delete(id int64) error
 		GetAll() ([]*Review, error)

@@ -212,22 +212,22 @@ func (rm ReviewModel) Get(startDate, endDate string) ([]*ReviewWithPizzaName, er
 	return reviews, nil
 }
 
+// MARK: -- UPDATE
 func (rm ReviewModel) Update(review *Review) error {
 	query := `
 	UPDATE reviews
 		SET
-		name = $1,
-		style = $2,
-		price = $3,
-		cheesiness = $4, 
-		flavor = $5, 
-		sauciness = $6, 
-		saltiness = $7, 
-		charness = $8,
-		spiciness = $9,
-		conclusion = $10,
-		image_id = $11,
-	WHERE id = $12
+		style = $1,
+		price = $2
+		cheesiness = $3, 
+		flavor = $4, 
+		sauciness = $5, 
+		saltiness = $6, 
+		charness = $7,
+		spiciness = $8,
+		conclusion = $9,
+		image_id = $10,
+	WHERE id = $11
 	RETURNING id
 	`
 
