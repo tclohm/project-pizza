@@ -84,7 +84,7 @@ func (vm VenueModel) Get(id int64) (*Venue, error) {
 		name, 
 		lat,
 		lon,
-		address,
+		address
 	FROM venues WHERE id = $1
 	`
 

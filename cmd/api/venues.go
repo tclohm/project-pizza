@@ -55,6 +55,33 @@ func (app *application) createVenueHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+func (app *application) showVenueHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	n, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	venue, err := app.models.Venues.Get(n)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"venue": venue}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
 func (app *application) updateVenueHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]

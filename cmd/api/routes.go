@@ -13,6 +13,7 @@ func (app *application) routes() http.Handler {
 	sub.HandleFunc("/images", app.createImageHandler).Methods("POST")
 	sub.HandleFunc("/images/{id:[0-9]+}", app.showImageHandler).Methods("GET")
 	sub.HandleFunc("/venues", app.createVenueHandler).Methods("POST")
+	sub.HandleFunc("/venues/{id:[0-9]+}", app.showVenueHandler).Methods("GET")
 	sub.HandleFunc("/reviews", app.createReviewHandler).Methods("POST")
 	sub.HandleFunc("/reviews", app.listReviewsHandler).Methods("GET")
 	sub.HandleFunc("/reviews/from={start}-to={end}", app.showReviewHandler).Methods("GET")	
