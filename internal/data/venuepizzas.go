@@ -80,16 +80,16 @@ func (vpm VenuePizzaModel) Insert(venuePizza *VenuePizza) error {
 	return vpm.DB.QueryRowContext(ctx, query, args...).Scan(&venuePizza.ID)
 }
 
-func (vpm VenuePizzaModel) Get(id int64) (*VenuePizza, error) {
-	if id < 1 {
+func (vpm VenuePizzaModel) Get(pizzaId int64) (*VenuePizza, error) {
+	if pizzaId < 1 {
 		return nil, ErrRecordNotFound
 	}
 
 	query := `
 	SELECT id, 
 		venue_id,
-		pizza_id,
-	FROM venuepizzas WHERE id = $1
+		pizza_id
+	FROM venuepizzas WHERE pizza_id = $1
 	`
 
 	var venuepizza VenuePizza
@@ -99,7 +99,7 @@ func (vpm VenuePizzaModel) Get(id int64) (*VenuePizza, error) {
 	// memory leak avoided
 	defer cancel()
 
-	err := vpm.DB.QueryRowContext(ctx, query, id).Scan(
+	err := vpm.DB.QueryRowContext(ctx, query, pizzaId).Scan(
 		&venuepizza.ID,
 		&venuepizza.VenueId,
 		&venuepizza.PizzaId,
@@ -375,7 +375,7 @@ func (vpm MockVenuePizzaModel) Insert(venuePizza *VenuePizza) error {
 	return nil
 }
 
-func (vpm MockVenuePizzaModel) Get(id int64) (*VenuePizza, error) {
+func (vpm MockVenuePizzaModel) Get(pizzaId int64) (*VenuePizza, error) {
 	return nil, nil
 }
 

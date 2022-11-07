@@ -23,6 +23,7 @@ func (app *application) routes() http.Handler {
 	sub.HandleFunc("/pizzas/{id:[0-9]+}", app.deletePizzaHandler).Methods("DELETE")
 	sub.HandleFunc("/venuepizza", app.createVenuePizzaHandler).Methods("POST")
 	sub.HandleFunc("/venuepizzas", app.listVenuePizzaHandler).Methods("GET")
+	sub.HandleFunc("/venuepizzas/{pizzaId:[0-9]+}", app.showVenuePizzaHandler).Methods("GET")
 
 	return app.recoverPanic(app.enableCORS(app.rateLimit(router)))
 }

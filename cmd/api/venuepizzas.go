@@ -50,6 +50,36 @@ func (app *application) createVenuePizzaHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
+func (app *application) showVenuePizzaHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	pizzaId := vars["pizzaId"]
+
+	n, err := strconv.ParseInt(pizzaId, 10, 64)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	// MARK: -- getting pizza
+	venuepizza, err := app.models.VenuePizzas.Get(n)
+
+	if err != nil {
+		switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				app.notFoundResponse(w, r)
+			default:
+				app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+	
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"venuepizza": venuepizza}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
 func (app *application) updateVenuePizzaHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]

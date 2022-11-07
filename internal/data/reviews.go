@@ -30,6 +30,7 @@ type Review struct {
 
 type ReviewWithPizzaName struct {
 	ID 			int64 		`json:"id"`
+	PizzaId 	int64 		`json:"pizza_id"`
 	Name 		string		`json:"name"`
 	Style 		string 		`json:"style"`
 	Price 		float32 	`json:"price"`
@@ -144,6 +145,7 @@ func (rm ReviewModel) Get(startDate, endDate string) ([]*ReviewWithPizzaName, er
 	query := `
 	SELECT 
 		reviews.id,
+		pizzas.id,
 		name,
 		style,
 		price,
@@ -185,6 +187,7 @@ func (rm ReviewModel) Get(startDate, endDate string) ([]*ReviewWithPizzaName, er
 
 		err = rows.Scan(
 			&review.ID,
+			&review.PizzaId,
 			&review.Name,
 			&review.Style,
 			&review.Price,
