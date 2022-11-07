@@ -30,7 +30,7 @@
 
 ## Models for DB
 
-go```
+```
 Reviews interface {
     Insert(review *Review) error
     Get(startDate, endDate string) ([]*ReviewWithPizzaName, error)
