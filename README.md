@@ -38,6 +38,7 @@ Reviews interface {
     Delete(id int64) error
     GetAll() ([]*Review, error)
 }
+
 Pizzas interface {
     Insert(pizza *Pizza) error
     Get(id int64) (*Pizza, error)
@@ -45,12 +46,14 @@ Pizzas interface {
     Delete(id int64) error
     GetAll() ([]*Pizza, error)
 }
+
 Images interface {
     Insert(image *Image) error
     Get(id int64) (*Image, error)
     Update(image *Image) error
     Delete(id int64) error
 }
+
 Venues interface {
     Insert(venue *Venue) error
     Get(id int64) (*Venue, error)
@@ -58,6 +61,7 @@ Venues interface {
     Delete(id int64) error
     GetAll() ([]*Venue, error)
 }
+
 VenuePizzas interface {
     Insert(venuePizza *VenuePizza) error
     GetPizza(id int64) (*Opinion, error)
