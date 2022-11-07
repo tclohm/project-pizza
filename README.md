@@ -27,3 +27,47 @@
 
 ### Example:
 -- go run ./cmd/api -cors-trusted-origins="http://localhost:3000 http://localhost:3000/*"
+
+## Models for DB
+
+```
+Reviews interface {
+    Insert(review *Review) error
+    Get(startDate, endDate string) ([]*ReviewWithPizzaName, error)
+    Update(review *Review) error
+    Delete(id int64) error
+    GetAll() ([]*Review, error)
+}
+
+Pizzas interface {
+    Insert(pizza *Pizza) error
+    Get(id int64) (*Pizza, error)
+    Update(pizza *Pizza) error
+    Delete(id int64) error
+    GetAll() ([]*Pizza, error)
+}
+
+Images interface {
+    Insert(image *Image) error
+    Get(id int64) (*Image, error)
+    Update(image *Image) error
+    Delete(id int64) error
+}
+
+Venues interface {
+    Insert(venue *Venue) error
+    Get(id int64) (*Venue, error)
+    Update(venue *Venue) error
+    Delete(id int64) error
+    GetAll() ([]*Venue, error)
+}
+
+VenuePizzas interface {
+    Insert(venuePizza *VenuePizza) error
+    GetPizza(id int64) (*Opinion, error)
+    Get(id int64) (*VenuePizza, error) 
+    Update(venuePizza *VenuePizza) error
+    Delete(id int64) error
+    GetAll() ([]*VenuePizzaMixin, error)
+}
+```
