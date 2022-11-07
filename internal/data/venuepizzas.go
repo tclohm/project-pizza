@@ -80,16 +80,91 @@ func (vpm VenuePizzaModel) Insert(venuePizza *VenuePizza) error {
 	return vpm.DB.QueryRowContext(ctx, query, args...).Scan(&venuePizza.ID)
 }
 
-func (vpm VenuePizzaModel) Get(pizzaId int64) (*VenuePizza, error) {
-	if pizzaId < 1 {
+
+
+func (vpm VenuePizzaModel) GetPizza(id int64) (*Opinion, error) {
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	// Get location
+
+	// Get peoples reviews
+
+	query := `
+	SELECT 
+		venue_id,
+		pizzas.id as pizza_id,
+		pizzas.name,
+		reviews.style as pizza_style,
+		reviews.price,
+		reviews.cheesiness,
+		reviews.flavor,
+		reviews.sauciness,
+		reviews.saltiness,
+		reviews.charness,
+		reviews.spiciness,
+		reviews.conclusion,
+		images.filename as pizza_image_filename,
+		images.id as pizza_image_id,
+		images.location as pizza_image_location,
+		reviews.created_at
+FROM venuepizzas
+JOIN pizzas ON pizzas.id = venuepizzas.pizza_id
+JOIN reviews ON reviews.id = pizzas.review_id
+JOIN images ON reviews.image_id = images.id
+WHERE pizza_id = $1
+ORDER BY reviews.created_at DESC
+	`
+
+	var opinion Opinion
+	// 3-second timeout deadline
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	// release resources associated with context before Get() is returned
+	// memory leak avoided
+	defer cancel()
+
+	err := vpm.DB.QueryRowContext(ctx, query, id).Scan(
+		&opinion.VenueId,
+		&opinion.PizzaId,
+		&opinion.PizzaName,
+		&opinion.PizzaStyle, 
+		&opinion.PizzaPrice,			
+		&opinion.Cheesiness, 			
+		&opinion.Flavor,				
+		&opinion.Sauciness, 			
+		&opinion.Saltiness,  			
+		&opinion.Charness, 			
+		&opinion.Spiciness,
+		&opinion.Conclusion,			
+		&opinion.PizzaImageFilename, 	
+		&opinion.PizzaImageID,		
+		&opinion.PizzaLocation,	
+		&opinion.CreatedAt,		
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &opinion, nil
+}
+
+func (vpm VenuePizzaModel) Get(id int64) (*VenuePizza, error) {
+	if id < 1 {
 		return nil, ErrRecordNotFound
 	}
 
 	query := `
-	SELECT id, 
-		venue_id,
-		pizza_id
-	FROM venuepizzas WHERE pizza_id = $1
+	SELECT 
+		*
+FROM venuepizzas
+WHERE pizza_id = $1
 	`
 
 	var venuepizza VenuePizza
@@ -99,7 +174,7 @@ func (vpm VenuePizzaModel) Get(pizzaId int64) (*VenuePizza, error) {
 	// memory leak avoided
 	defer cancel()
 
-	err := vpm.DB.QueryRowContext(ctx, query, pizzaId).Scan(
+	err := vpm.DB.QueryRowContext(ctx, query, id).Scan(
 		&venuepizza.ID,
 		&venuepizza.VenueId,
 		&venuepizza.PizzaId,
@@ -375,8 +450,12 @@ func (vpm MockVenuePizzaModel) Insert(venuePizza *VenuePizza) error {
 	return nil
 }
 
-func (vpm MockVenuePizzaModel) Get(pizzaId int64) (*VenuePizza, error) {
+func (vpm MockVenuePizzaModel) GetPizza(id int64) (*Opinion, error) {
 	return nil, nil
+}
+
+func (vpm MockVenuePizzaModel) Get(id int64) (*VenuePizza, error) {
+	return nil, nil 
 }
 
 func (vpm MockVenuePizzaModel) Update(venuePizza *VenuePizza) error {

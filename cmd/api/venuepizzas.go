@@ -61,7 +61,7 @@ func (app *application) showVenuePizzaHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// MARK: -- getting pizza
-	venuepizza, err := app.models.VenuePizzas.Get(n)
+	venuepizza, err := app.models.VenuePizzas.GetPizza(n)
 
 	if err != nil {
 		switch {
