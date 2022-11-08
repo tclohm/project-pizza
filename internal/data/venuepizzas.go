@@ -192,6 +192,91 @@ WHERE pizza_id = $1
 	return &venuepizza, nil
 }
 
+func (vpm VenuePizzaModel) GetPizzasFromVenue(id int64) ([]*Opinion, error) {
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	query := `SELECT 
+		venue_id,
+		pizzas.review_id,
+		pizzas.name,
+		reviews.style as pizza_style,
+		reviews.price,
+		reviews.cheesiness,
+		reviews.flavor,
+		reviews.sauciness,
+		reviews.saltiness,
+		reviews.charness,
+		reviews.spiciness,
+		reviews.conclusion,
+		images.filename as pizza_image_filename,
+		images.id as pizza_image_id,
+		images.location as pizza_image_location,
+		reviews.created_at
+	FROM venuepizzas
+	JOIN pizzas ON pizzas.id = venuepizzas.pizza_id
+	JOIN reviews ON reviews.id = pizzas.review_id
+	JOIN images ON reviews.image_id = images.id
+	WHERE venue_id = $1
+	ORDER BY reviews.created_at DESC`
+
+	opinions := []*Opinion{}
+	// 3-second timeout deadline
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	// release resources associated with context before Get() is returned
+	// memory leak avoided
+	defer cancel()
+
+	// MARK: -- This is where I need to some work
+	// opinion_args := []interface{}{}
+
+	opinion_rows, err := vpm.DB.QueryContext(ctx, query, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer opinion_rows.Close()
+
+	for opinion_rows.Next() {
+		var opinion Opinion
+
+		err := opinion_rows.Scan(
+			&opinion.VenueId,
+			&opinion.PizzaId,
+			&opinion.PizzaName,
+			&opinion.PizzaStyle, 
+			&opinion.PizzaPrice,			
+			&opinion.Cheesiness, 			
+			&opinion.Flavor,				
+			&opinion.Sauciness, 			
+			&opinion.Saltiness,  			
+			&opinion.Charness, 			
+			&opinion.Spiciness,
+			&opinion.Conclusion,			
+			&opinion.PizzaImageFilename, 	
+			&opinion.PizzaImageID,		
+			&opinion.PizzaLocation,	
+			&opinion.CreatedAt,				
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if err = opinion_rows.Err(); err != nil {
+			return nil, err
+		}
+
+		opinions = append(opinions, &opinion)
+
+	}
+
+	return opinions, nil
+
+}
+
 func (vpm VenuePizzaModel) Update(venuePizza *VenuePizza) error {
 	query := `
 	UPDATE venuepizzas
@@ -456,6 +541,10 @@ func (vpm MockVenuePizzaModel) GetPizza(id int64) (*Opinion, error) {
 
 func (vpm MockVenuePizzaModel) Get(id int64) (*VenuePizza, error) {
 	return nil, nil 
+}
+
+func (vpm MockVenuePizzaModel) GetPizzasFromVenue(id int64) ([]*Opinion, error) {
+	return nil, nil
 }
 
 func (vpm MockVenuePizzaModel) Update(venuePizza *VenuePizza) error {

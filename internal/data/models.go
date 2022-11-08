@@ -42,6 +42,7 @@ type Models struct {
 		Insert(venuePizza *VenuePizza) error
 		GetPizza(id int64) (*Opinion, error)
 		Get(id int64) (*VenuePizza, error) 
+		GetPizzasFromVenue(id int64) ([]*Opinion, error)
 		Update(venuePizza *VenuePizza) error
 		Delete(id int64) error
 		GetAll() ([]*VenuePizzaMixin, error)
