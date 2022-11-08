@@ -80,6 +80,34 @@ func (app *application) showVenuePizzaHandler(w http.ResponseWriter, r *http.Req
 	}
 }
 
+func (app *application) showOtherPizzasFromVenue(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	venueId := vars["venueId"]
+
+	n, err := strconv.ParseInt(venueId, 10, 64)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	venuepizzas, err := app.models.VenuePizzas.GetPizzasFromVenue(n)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"venuepizzas": venuepizzas}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
 func (app *application) updateVenuePizzaHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
